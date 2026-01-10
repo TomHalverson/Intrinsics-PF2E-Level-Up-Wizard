@@ -48,6 +48,7 @@
     ]
   },
   "url": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard",
-  "manifest": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard/releases/latest/download/module.json",
-  "download": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard/releases/download/1.0.0/module.zip"
+  "manifest": "https://raw.githubusercontent.com/TomHalverson/Intrinsics-PF2E-Level-Up-Wizard/refs/heads/main/module.json",
+  "download": "https://github.com/TomHalverson/Intrinsics-PF2E-Level-Up-Wizard/archive/refs/heads/main.zip"
 }
+
