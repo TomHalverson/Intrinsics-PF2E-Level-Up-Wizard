@@ -1,0 +1,219 @@
+{
+  "intrinsics-pf2e-level-up-wizard": {
+    "settings": {
+      "show-build-planner-button": {
+        "name": "Show Build Planner Button",
+        "hint": "Show the Build Planner button on character sheets"
+      },
+      "show-level-up-button": {
+        "name": "Show Level Up Button",
+        "hint": "Show the Level Up Wizard button on character sheets"
+      },
+      "auto-prompt-on-level-up": {
+        "name": "Auto-prompt on Level Up",
+        "hint": "Automatically show level-up wizard when character levels up"
+      },
+      "default-apply-plan": {
+        "name": "Default to Applying Build Plan",
+        "hint": "When leveling up, default to applying the build plan if one exists"
+      },
+      "additional-feat-compendiums": {
+        "name": "Additional Feat Compendiums",
+        "hint": "Comma-separated list of additional compendium IDs to load feats from (e.g., 'world.custom-feats, module.homebrew-feats')"
+      },
+      "additional-spell-compendiums": {
+        "name": "Additional Spell Compendiums",
+        "hint": "Comma-separated list of additional compendium IDs to load spells from"
+      },
+      "feat-sort-method": {
+        "name": "Feat Sort Method",
+        "hint": "Default sorting method for feats in selector"
+      },
+      "debug-mode": {
+        "name": "Debug Mode",
+        "hint": "Enable debug logging to console"
+      }
+    },
+
+    "buttons": {
+      "build-planner": "Build Planner",
+      "level-up": "Level Up",
+      "apply-plan": "Apply Build Plan",
+      "manual-level-up": "Manual Level Up",
+      "use-build-plan": "Use Build Plan",
+      "save-plan": "Save Plan",
+      "export-plan": "Export Plan",
+      "import-plan": "Import Plan",
+      "summary-view": "Summary View",
+      "next-level": "Next Level",
+      "prev-level": "Previous Level",
+      "select-feat": "Select Feat",
+      "change-feat": "Change Feat",
+      "remove-feat": "Remove Feat",
+      "select-spell": "Select Spell",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "close": "Close",
+      "compare": "Compare",
+      "view-details": "View Details"
+    },
+
+    "labels": {
+      "level": "Level",
+      "feat-type": {
+        "class": "Class Feat",
+        "ancestry": "Ancestry Feat",
+        "skill": "Skill Feat",
+        "general": "General Feat",
+        "archetype": "Free Archetype Feat",
+        "mythic": "Mythic Feat",
+        "destiny": "Destiny Feat",
+        "ancestryParagon": "Ancestry Paragon Feat",
+        "dualClass": "Dual Class Feat"
+      },
+      "ability": {
+        "str": "Strength",
+        "dex": "Dexterity",
+        "con": "Constitution",
+        "int": "Intelligence",
+        "wis": "Wisdom",
+        "cha": "Charisma"
+      },
+      "skill-rank": {
+        "untrained": "Untrained",
+        "trained": "Trained",
+        "expert": "Expert",
+        "master": "Master",
+        "legendary": "Legendary"
+      },
+      "spell-rank": "Spell Rank",
+      "cantrips": "Cantrips",
+      "ability-boosts": "Ability Boosts",
+      "skill-increases": "Skill Increases",
+      "notes": "Notes",
+      "prerequisites": "Prerequisites",
+      "traits": "Traits",
+      "actions": "Actions",
+      "range": "Range",
+      "area": "Area",
+      "duration": "Duration",
+      "tradition": "Tradition",
+      "school": "School",
+      "rarity": "Rarity"
+    },
+
+    "messages": {
+      "level-up": {
+        "congratulations": "Congratulations, {name}!",
+        "reached-level": "You've reached level {level}!",
+        "build-plan-exists": "A build plan exists for this level.",
+        "build-plan-includes": "Build plan includes:",
+        "no-build-plan": "No build plan exists for this level.",
+        "apply-or-manual": "Would you like to apply the build plan or manually level up?"
+      },
+      "validation": {
+        "required": "{field} is required",
+        "incomplete": "Some choices are incomplete",
+        "all-complete": "All choices are complete",
+        "prerequisites-not-met": "Prerequisites not met: {prerequisites}",
+        "ability-boost-count": "Expected {expected} ability boosts, got {actual}",
+        "skill-increase-count": "Expected {expected} skill increases, got {actual}"
+      },
+      "success": {
+        "plan-saved": "Build plan saved successfully",
+        "plan-applied": "Build plan applied successfully for level {level}",
+        "level-up-complete": "Level up complete!",
+        "plan-exported": "Build plan exported to clipboard",
+        "plan-imported": "Build plan imported successfully"
+      },
+      "error": {
+        "no-actor": "No actor provided",
+        "invalid-level": "Invalid level: {level}",
+        "no-plan": "No build plan found",
+        "apply-failed": "Failed to apply build plan: {error}",
+        "load-failed": "Failed to load data: {error}",
+        "validation-failed": "Validation failed",
+        "import-failed": "Failed to import build plan: {error}"
+      },
+      "warning": {
+        "variant-rules-changed": "Variant rules have changed since plan was created",
+        "plan-deviation": "Character differs from build plan",
+        "mythic-tier-changed": "Mythic tier progression has changed",
+        "feat-not-selected": "{featType} not selected",
+        "incomplete-level": "Level {level} is incomplete"
+      },
+      "info": {
+        "auto-save": "Auto-saving...",
+        "loading": "Loading...",
+        "no-feats-available": "No feats available",
+        "no-spells-available": "No spells available",
+        "select-feat": "Select a feat to view details",
+        "select-spell": "Select a spell to view details",
+        "feat-count": "{count} feats available",
+        "spell-count": "{count} spells available"
+      }
+    },
+
+    "titles": {
+      "build-planner": "Build Planner - {name}",
+      "level-up-wizard": "Level Up Wizard - {name}",
+      "feat-selector": "Select {featType} - Level {level}",
+      "spell-selector": "Select Spells - Rank {rank}",
+      "summary": "Build Summary",
+      "level-details": "Level {level} Details"
+    },
+
+    "descriptions": {
+      "build-planner": "Plan your character's progression from levels 1-20. Select feats, spells, skills, and ability boosts for each level.",
+      "level-up-wizard": "Guide your character through leveling up. Make all required choices for level {level}.",
+      "feat-selector": "Select a feat from the list below. Click on a feat to view full details.",
+      "spell-selector": "Select spells to learn. You can select up to {count} spells.",
+      "ability-boosts": "Select {count} ability scores to increase by 1.",
+      "skill-increases": "Select {count} skills to increase proficiency.",
+      "notes": "Add notes about your plans for this level."
+    },
+
+    "placeholders": {
+      "no-feat-selected": "No feat selected",
+      "no-spell-selected": "No spells selected",
+      "no-ability-boosts": "No ability boosts selected",
+      "no-skill-increases": "No skill increases selected",
+      "search-feats": "Search feats...",
+      "search-spells": "Search spells...",
+      "search-skills": "Search skills...",
+      "add-notes": "Add notes here..."
+    },
+
+    "filters": {
+      "level": "Level",
+      "all-levels": "All Levels",
+      "archetype-only": "Archetype Only",
+      "show-uncommon": "Show Uncommon",
+      "sort-by": "Sort By",
+      "sort-level-desc": "Level (High to Low)",
+      "sort-level-asc": "Level (Low to High)",
+      "sort-alphabetical": "Alphabetical",
+      "school": "School",
+      "tradition": "Tradition"
+    },
+
+    "status": {
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "pending": "Pending",
+      "in-progress": "In Progress",
+      "applied": "Applied",
+      "not-applied": "Not Applied"
+    },
+
+    "variant-rules": {
+      "free-archetype": "Free Archetype",
+      "gradual-boosts": "Gradual Ability Boosts",
+      "ancestry-paragon": "Ancestry Paragon",
+      "dual-class": "Dual Class",
+      "mythic": "Mythic",
+      "abp": "Automatic Bonus Progression"
+    }
+  }
+}
