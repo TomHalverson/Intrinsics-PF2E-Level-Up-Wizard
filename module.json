@@ -1,0 +1,53 @@
+{
+  "id": "intrinsics-pf2e-level-up-wizard",
+  "title": "Intrinsics PF2e Level Up Wizard",
+  "description": "A comprehensive build planner and level-up wizard for Pathfinder 2E. Plan your character's progression from levels 1-20 and apply build plans automatically when leveling up. Includes full mythic support and enhanced feat/spell selectors.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": 13,
+    "verified": 13
+  },
+  "authors": [
+    {
+      "name": "Intrinsic",
+      "flags": {}
+    }
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ],
+  "styles": [
+    "styles/build-planner.css",
+    "styles/level-up-wizard.css",
+    "styles/feat-selector.css",
+    "styles/shared.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "6.0.0"
+        }
+      }
+    ],
+    "recommends": [
+      {
+        "id": "xdy-pf2e-workbench",
+        "type": "module",
+        "reason": "Required for mythic support"
+      }
+    ]
+  },
+  "url": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard",
+  "manifest": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard/releases/latest/download/module.json",
+  "download": "https://github.com/yourusername/intrinsics-pf2e-level-up-wizard/releases/download/1.0.0/module.zip"
+}
