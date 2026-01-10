@@ -1,0 +1,534 @@
+/* Intrinsics Level Up Wizard - Shared Styles */
+/* Dark Theme with Purple Accents */
+
+:root {
+  /* Background Colors */
+  --iluw-bg-primary: #1F2937;
+  --iluw-bg-secondary: #111827;
+  --iluw-bg-card: #1F2937;
+  --iluw-bg-hover: rgba(96, 165, 250, 0.1);
+
+  /* Border Colors */
+  --iluw-border-color: #374151;
+  --iluw-border-highlight: #4B5563;
+
+  /* Text Colors */
+  --iluw-text-primary: #E5E7EB;
+  --iluw-text-secondary: #D1D5DB;
+  --iluw-text-muted: #9CA3AF;
+
+  /* Purple Gradients */
+  --iluw-purple-gradient: linear-gradient(135deg, #35136bff 0%, #2e0e61ff 100%);
+  --iluw-purple-hover: linear-gradient(135deg, #4318a1 0%, #3a1178 100%);
+
+  /* Accent Colors */
+  --iluw-accent-green: #10b981;
+  --iluw-accent-blue: #60a5fa;
+  --iluw-accent-red: #ef4444;
+  --iluw-accent-yellow: #fbbf24;
+  --iluw-accent-purple: #9b59b6;
+
+  /* Proficiency Ranks */
+  --iluw-untrained: #666666;
+  --iluw-trained: #5e0000;
+  --iluw-expert: #000080;
+  --iluw-master: #008000;
+  --iluw-legendary: #ff8c00;
+}
+
+/* ========================================================================== */
+/* GLOBAL APPLICATION STYLES */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard {
+  background: var(--iluw-bg-primary);
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .window-content {
+  background: var(--iluw-bg-primary);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ========================================================================== */
+/* TYPOGRAPHY */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard h1 {
+  font-size: 24px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 12px 0;
+}
+
+.intrinsics-level-up-wizard h2 {
+  font-size: 20px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 10px 0;
+}
+
+.intrinsics-level-up-wizard h3 {
+  font-size: 18px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.intrinsics-level-up-wizard h4 {
+  font-size: 16px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 6px 0;
+}
+
+.intrinsics-level-up-wizard p {
+  color: var(--iluw-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+/* ========================================================================== */
+/* BUTTONS */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.intrinsics-level-up-wizard .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.intrinsics-level-up-wizard .btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.intrinsics-level-up-wizard .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.intrinsics-level-up-wizard .btn-primary {
+  background: var(--iluw-purple-gradient);
+  color: white;
+}
+
+.intrinsics-level-up-wizard .btn-primary:hover:not(:disabled) {
+  background: var(--iluw-purple-hover);
+}
+
+.intrinsics-level-up-wizard .btn-secondary {
+  background: var(--iluw-bg-secondary);
+  color: var(--iluw-text-primary);
+  border: 2px solid var(--iluw-border-color);
+}
+
+.intrinsics-level-up-wizard .btn-secondary:hover:not(:disabled) {
+  border-color: var(--iluw-accent-blue);
+  background: var(--iluw-bg-hover);
+}
+
+.intrinsics-level-up-wizard .btn-success {
+  background: var(--iluw-accent-green);
+  color: white;
+}
+
+.intrinsics-level-up-wizard .btn-danger {
+  background: var(--iluw-accent-red);
+  color: white;
+}
+
+.intrinsics-level-up-wizard .btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ========================================================================== */
+/* CARDS */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .card {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.intrinsics-level-up-wizard .card:hover {
+  border-color: var(--iluw-accent-blue);
+  background: var(--iluw-bg-hover);
+}
+
+.intrinsics-level-up-wizard .card.selected {
+  border-color: var(--iluw-accent-green);
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.intrinsics-level-up-wizard .card.clickable {
+  cursor: pointer;
+}
+
+.intrinsics-level-up-wizard .card.clickable:hover {
+  transform: translateY(-2px);
+}
+
+/* ========================================================================== */
+/* INPUTS */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard input[type="text"],
+.intrinsics-level-up-wizard input[type="search"],
+.intrinsics-level-up-wizard input[type="number"],
+.intrinsics-level-up-wizard textarea,
+.intrinsics-level-up-wizard select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 6px;
+  color: var(--iluw-text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.intrinsics-level-up-wizard input:focus,
+.intrinsics-level-up-wizard textarea:focus,
+.intrinsics-level-up-wizard select:focus {
+  outline: none;
+  border-color: var(--iluw-accent-blue);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.intrinsics-level-up-wizard input::placeholder,
+.intrinsics-level-up-wizard textarea::placeholder {
+  color: var(--iluw-text-muted);
+}
+
+/* ========================================================================== */
+/* SEARCH BAR */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .search-bar {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.intrinsics-level-up-wizard .search-bar i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--iluw-text-muted);
+  pointer-events: none;
+}
+
+.intrinsics-level-up-wizard .search-bar input {
+  padding-left: 40px;
+}
+
+/* ========================================================================== */
+/* BADGES & TAGS */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.intrinsics-level-up-wizard .badge-primary {
+  background: rgba(155, 89, 182, 0.2);
+  color: var(--iluw-accent-purple);
+  border: 1px solid var(--iluw-accent-purple);
+}
+
+.intrinsics-level-up-wizard .badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--iluw-accent-green);
+  border: 1px solid var(--iluw-accent-green);
+}
+
+.intrinsics-level-up-wizard .badge-warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--iluw-accent-yellow);
+  border: 1px solid var(--iluw-accent-yellow);
+}
+
+.intrinsics-level-up-wizard .badge-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--iluw-accent-red);
+  border: 1px solid var(--iluw-accent-red);
+}
+
+.intrinsics-level-up-wizard .badge-info {
+  background: rgba(96, 165, 250, 0.2);
+  color: var(--iluw-accent-blue);
+  border: 1px solid var(--iluw-accent-blue);
+}
+
+/* Trait Badges */
+.intrinsics-level-up-wizard .trait-badge {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid var(--iluw-accent-blue);
+  color: var(--iluw-accent-blue);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  margin: 2px;
+}
+
+/* ========================================================================== */
+/* ALERTS & MESSAGES */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intrinsics-level-up-wizard .alert i {
+  font-size: 20px;
+}
+
+.intrinsics-level-up-wizard .alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid var(--iluw-accent-green);
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .alert-success i {
+  color: var(--iluw-accent-green);
+}
+
+.intrinsics-level-up-wizard .alert-warning {
+  background: rgba(251, 191, 36, 0.1);
+  border: 2px solid var(--iluw-accent-yellow);
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .alert-warning i {
+  color: var(--iluw-accent-yellow);
+}
+
+.intrinsics-level-up-wizard .alert-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid var(--iluw-accent-red);
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .alert-danger i {
+  color: var(--iluw-accent-red);
+}
+
+.intrinsics-level-up-wizard .alert-info {
+  background: rgba(96, 165, 250, 0.1);
+  border: 2px solid var(--iluw-accent-blue);
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .alert-info i {
+  color: var(--iluw-accent-blue);
+}
+
+/* ========================================================================== */
+/* PROGRESS INDICATOR */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--iluw-bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.intrinsics-level-up-wizard .progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.intrinsics-level-up-wizard .progress-step.active,
+.intrinsics-level-up-wizard .progress-step.complete {
+  opacity: 1;
+}
+
+.intrinsics-level-up-wizard .progress-step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--iluw-text-muted);
+  transition: all 0.2s ease;
+}
+
+.intrinsics-level-up-wizard .progress-step.complete .progress-step-icon {
+  background: var(--iluw-accent-green);
+  border-color: var(--iluw-accent-green);
+  color: white;
+}
+
+.intrinsics-level-up-wizard .progress-step.active .progress-step-icon {
+  background: var(--iluw-purple-gradient);
+  border-color: var(--iluw-accent-blue);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+  color: white;
+}
+
+.intrinsics-level-up-wizard .progress-step-label {
+  font-size: 12px;
+  color: var(--iluw-text-secondary);
+  text-align: center;
+}
+
+/* ========================================================================== */
+/* TWO-COLUMN LAYOUT */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .two-column-layout {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+}
+
+.intrinsics-level-up-wizard .main-column {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.intrinsics-level-up-wizard .side-column {
+  width: 320px;
+  min-width: 320px;
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - 200px);
+}
+
+/* ========================================================================== */
+/* UTILITIES */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard .text-muted {
+  color: var(--iluw-text-muted);
+}
+
+.intrinsics-level-up-wizard .text-primary {
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard .text-success {
+  color: var(--iluw-accent-green);
+}
+
+.intrinsics-level-up-wizard .text-danger {
+  color: var(--iluw-accent-red);
+}
+
+.intrinsics-level-up-wizard .text-warning {
+  color: var(--iluw-accent-yellow);
+}
+
+.intrinsics-level-up-wizard .text-center {
+  text-align: center;
+}
+
+.intrinsics-level-up-wizard .flex {
+  display: flex;
+}
+
+.intrinsics-level-up-wizard .flex-column {
+  flex-direction: column;
+}
+
+.intrinsics-level-up-wizard .gap-4 {
+  gap: 4px;
+}
+
+.intrinsics-level-up-wizard .gap-8 {
+  gap: 8px;
+}
+
+.intrinsics-level-up-wizard .gap-12 {
+  gap: 12px;
+}
+
+.intrinsics-level-up-wizard .gap-16 {
+  gap: 16px;
+}
+
+.intrinsics-level-up-wizard .mt-16 {
+  margin-top: 16px;
+}
+
+.intrinsics-level-up-wizard .mb-16 {
+  margin-bottom: 16px;
+}
+
+.intrinsics-level-up-wizard .p-16 {
+  padding: 16px;
+}
+
+/* ========================================================================== */
+/* SCROLLBAR STYLING */
+/* ========================================================================== */
+
+.intrinsics-level-up-wizard ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.intrinsics-level-up-wizard ::-webkit-scrollbar-track {
+  background: var(--iluw-bg-secondary);
+  border-radius: 6px;
+}
+
+.intrinsics-level-up-wizard ::-webkit-scrollbar-thumb {
+  background: var(--iluw-border-highlight);
+  border-radius: 6px;
+  border: 2px solid var(--iluw-bg-secondary);
+}
+
+.intrinsics-level-up-wizard ::-webkit-scrollbar-thumb:hover {
+  background: var(--iluw-accent-purple);
+}

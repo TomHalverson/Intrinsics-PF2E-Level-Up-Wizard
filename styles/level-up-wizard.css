@@ -1,0 +1,506 @@
+/* Level Up Wizard Styles */
+/* Extends shared.css */
+
+.level-up-wizard-app {
+  min-width: 800px;
+  min-height: 600px;
+}
+
+.level-up-wizard-app .window-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ========================================================================== */
+/* WIZARD HEADER */
+/* ========================================================================== */
+
+.wizard-header {
+  padding: 16px;
+  background: var(--iluw-bg-secondary);
+  border-bottom: 2px solid var(--iluw-border-color);
+}
+
+.wizard-title {
+  font-size: 24px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 8px 0;
+  font-weight: bold;
+}
+
+.wizard-subtitle {
+  font-size: 14px;
+  color: var(--iluw-text-muted);
+  margin: 0;
+}
+
+/* ========================================================================== */
+/* WIZARD CONTENT */
+/* ========================================================================== */
+
+.wizard-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.wizard-section {
+  margin-bottom: 24px;
+}
+
+.wizard-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.wizard-section-title {
+  font-size: 20px;
+  color: var(--iluw-text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.wizard-section-icon {
+  color: var(--iluw-accent-purple);
+  font-size: 20px;
+}
+
+.wizard-section-description {
+  font-size: 14px;
+  color: var(--iluw-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+/* ========================================================================== */
+/* PLAN PROMPT */
+/* ========================================================================== */
+
+.plan-prompt {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-accent-purple);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 20px rgba(155, 89, 182, 0.2);
+}
+
+.plan-prompt-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.plan-prompt-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--iluw-purple-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+}
+
+.plan-prompt-title {
+  font-size: 20px;
+  color: var(--iluw-text-primary);
+  font-weight: bold;
+  margin: 0;
+}
+
+.plan-prompt-content {
+  color: var(--iluw-text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.plan-prompt-summary {
+  background: var(--iluw-bg-primary);
+  border: 1px solid var(--iluw-border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.plan-prompt-summary h4 {
+  margin: 0 0 8px 0;
+  color: var(--iluw-text-primary);
+  font-size: 16px;
+}
+
+.plan-prompt-summary ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--iluw-text-secondary);
+  font-size: 14px;
+}
+
+.plan-prompt-summary li {
+  margin-bottom: 4px;
+}
+
+.plan-prompt-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========================================================================== */
+/* FEAT SELECTION */
+/* ========================================================================== */
+
+.feat-selection {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.feat-selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.feat-type-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feat-type-label i {
+  color: var(--iluw-accent-purple);
+}
+
+.feat-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-accent-green);
+  border-radius: 6px;
+}
+
+.feat-not-selected {
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px dashed var(--iluw-border-color);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--iluw-text-muted);
+}
+
+.feat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 2px solid var(--iluw-border-color);
+}
+
+.feat-info {
+  flex: 1;
+}
+
+.feat-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.feat-meta {
+  font-size: 12px;
+  color: var(--iluw-text-muted);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========================================================================== */
+/* SPELL SELECTION */
+/* ========================================================================== */
+
+.spell-selection {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.spell-rank-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spell-rank-header i {
+  color: var(--iluw-accent-blue);
+}
+
+.spell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spell-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 6px;
+}
+
+.spell-item.selected {
+  border-color: var(--iluw-accent-green);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.spell-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.spell-info {
+  flex: 1;
+}
+
+.spell-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+}
+
+.spell-meta {
+  font-size: 11px;
+  color: var(--iluw-text-muted);
+}
+
+/* ========================================================================== */
+/* ABILITY BOOST SELECTION */
+/* ========================================================================== */
+
+.ability-boost-selection {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ability-boost-info {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid var(--iluw-accent-blue);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--iluw-text-secondary);
+  font-size: 13px;
+}
+
+.ability-boost-info i {
+  color: var(--iluw-accent-blue);
+  font-size: 18px;
+}
+
+.ability-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.ability-button {
+  padding: 16px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.ability-button:hover:not(.disabled) {
+  border-color: var(--iluw-accent-blue);
+  background: var(--iluw-bg-hover);
+  transform: translateY(-2px);
+}
+
+.ability-button.selected {
+  border-color: var(--iluw-accent-green);
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.ability-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ability-abbr {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--iluw-text-primary);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ability-score-display {
+  font-size: 14px;
+  color: var(--iluw-text-muted);
+  margin-bottom: 4px;
+}
+
+.ability-modifier {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--iluw-accent-green);
+}
+
+/* ========================================================================== */
+/* SKILL SELECTION */
+/* ========================================================================== */
+
+.skill-selection {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.skill-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.skill-item {
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skill-item:hover:not(.disabled) {
+  border-color: var(--iluw-accent-blue);
+  background: var(--iluw-bg-hover);
+}
+
+.skill-item.selected {
+  border-color: var(--iluw-accent-green);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.skill-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.skill-name-rank {
+  flex: 1;
+}
+
+.skill-name-display {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  margin-bottom: 2px;
+}
+
+.skill-rank-display {
+  font-size: 11px;
+  color: var(--iluw-text-muted);
+}
+
+/* ========================================================================== */
+/* WIZARD FOOTER */
+/* ========================================================================== */
+
+.wizard-footer {
+  padding: 16px;
+  background: var(--iluw-bg-secondary);
+  border-top: 2px solid var(--iluw-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wizard-validation {
+  flex: 1;
+  color: var(--iluw-text-muted);
+  font-size: 13px;
+}
+
+.wizard-validation.valid {
+  color: var(--iluw-accent-green);
+}
+
+.wizard-validation.invalid {
+  color: var(--iluw-accent-red);
+}
+
+.wizard-footer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ========================================================================== */
+/* COMPLETION SUMMARY */
+/* ========================================================================== */
+
+.completion-summary {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid var(--iluw-accent-green);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.completion-icon {
+  font-size: 64px;
+  color: var(--iluw-accent-green);
+  margin-bottom: 16px;
+}
+
+.completion-title {
+  font-size: 24px;
+  color: var(--iluw-text-primary);
+  font-weight: bold;
+  margin: 0 0 12px 0;
+}
+
+.completion-text {
+  font-size: 16px;
+  color: var(--iluw-text-secondary);
+  margin: 0 0 20px 0;
+}
