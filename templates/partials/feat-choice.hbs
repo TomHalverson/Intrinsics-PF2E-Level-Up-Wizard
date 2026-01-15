@@ -1,0 +1,44 @@
+{{! Feat Choice Partial
+  Parameters:
+  - featType: "classFeats", "skillFeats", "generalFeats", etc.
+  - title: Display title (e.g., "Class Feat")
+  - icon: FontAwesome icon class
+  - required: Boolean - is this choice required?
+  - choice: The current selection (UUID or null)
+  - choiceName: Resolved name of the choice
+  - level: Current level
+}}
+<div class="choice-section">
+  <div class="choice-section-header">
+    <div class="choice-section-title">
+      <i class="{{icon}}"></i>
+      {{title}}
+    </div>
+    {{#if required}}
+    <span class="choice-required">Required</span>
+    {{/if}}
+  </div>
+  <div class="choice-display {{#if choice}}has-choice{{/if}}">
+    {{#if choice}}
+    <div class="choice-details">
+      <p class="choice-name">{{choiceName}}</p>
+      <div class="choice-meta">
+        <span>{{title}}</span>
+        <span>Level {{level}}</span>
+      </div>
+    </div>
+    <div class="choice-actions">
+      <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="{{featType}}">
+        <i class="fas fa-edit"></i> Change
+      </button>
+    </div>
+    {{else}}
+    <span class="choice-placeholder">No {{lowercase title}} selected</span>
+    <div class="choice-actions">
+      <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="{{featType}}">
+        <i class="fas fa-plus"></i> Select
+      </button>
+    </div>
+    {{/if}}
+  </div>
+</div>

@@ -1,0 +1,114 @@
+{{! Plan Summary Partial
+  Parameters:
+  - summaryLevels: Array of level data (1-20)
+  - actor: The actor object
+}}
+<div class="plan-summary">
+  <div class="summary-header">
+    <h2>Build Plan Summary</h2>
+    <p>Complete overview of your character progression from levels 1-20</p>
+  </div>
+
+  <div class="summary-levels">
+    {{#each summaryLevels}}
+    <div class="summary-level {{#if this.isComplete}}complete{{else}}incomplete{{/if}} {{#unless this.hasChoices}}empty{{/unless}}"
+         data-action="selectLevel"
+         data-level="{{this.number}}">
+      <div class="summary-level-header">
+        <span class="summary-level-number">Level {{this.number}}</span>
+        <span class="summary-level-status">
+          {{#if this.isComplete}}
+          <i class="fas fa-check-circle"></i> Complete
+          {{else if this.hasChoices}}
+          <i class="fas fa-hourglass-half"></i> In Progress
+          {{else}}
+          <i class="far fa-circle"></i> Not Started
+          {{/if}}
+        </span>
+      </div>
+
+      {{#if this.hasChoices}}
+      <div class="summary-level-choices">
+        {{#if this.choices.classFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-fist-raised"></i>
+          <span>Class Feat</span>
+        </div>
+        {{/if}}
+
+        {{#if this.choices.ancestryFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-dna"></i>
+          <span>Ancestry Feat</span>
+        </div>
+        {{/if}}
+
+        {{#if this.choices.skillFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-hand-sparkles"></i>
+          <span>Skill Feat</span>
+        </div>
+        {{/if}}
+
+        {{#if this.choices.generalFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-star"></i>
+          <span>General Feat</span>
+        </div>
+        {{/if}}
+
+        {{#if this.choices.freeArchetypeFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-book"></i>
+          <span>Free Archetype</span>
+        </div>
+        {{/if}}
+
+        {{#if this.choices.mythicFeats}}
+        <div class="summary-choice">
+          <i class="fas fa-crown"></i>
+          <span>Mythic Feat</span>
+        </div>
+        {{/if}}
+
+        {{#if (gt this.choices.abilityBoosts.length 0)}}
+        <div class="summary-choice">
+          <i class="fas fa-bolt"></i>
+          <span>{{this.choices.abilityBoosts.length}} Ability Boosts</span>
+        </div>
+        {{/if}}
+
+        {{#if (gt this.choices.skillIncreases.length 0)}}
+        <div class="summary-choice">
+          <i class="fas fa-graduation-cap"></i>
+          <span>{{this.choices.skillIncreases.length}} Skill Increases</span>
+        </div>
+        {{/if}}
+
+        {{! Check for spells across all ranks }}
+        {{#if this.choices.cantrips}}
+        <div class="summary-choice">
+          <i class="fas fa-wand-sparkles"></i>
+          <span>{{this.choices.cantrips.length}} Cantrips</span>
+        </div>
+        {{/if}}
+
+        {{#if (or this.choices.rank1Spells this.choices.rank2Spells this.choices.rank3Spells this.choices.rank4Spells this.choices.rank5Spells)}}
+        <div class="summary-choice">
+          <i class="fas fa-hat-wizard"></i>
+          <span>Spells Selected</span>
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if this.notes}}
+      <div class="summary-level-notes">
+        <i class="fas fa-sticky-note"></i>
+        {{this.notes}}
+      </div>
+      {{/if}}
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+</div>

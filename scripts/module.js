@@ -20,6 +20,15 @@ Hooks.once('init', async () => {
   // Register Handlebars helpers
   registerHandlebarsHelpers();
 
+  // Load and register Handlebars partials
+  await loadTemplates([
+    'modules/intrinsics-pf2e-level-up-wizard/templates/partials/ability-boosts.hbs',
+    'modules/intrinsics-pf2e-level-up-wizard/templates/partials/feat-choice.hbs',
+    'modules/intrinsics-pf2e-level-up-wizard/templates/partials/plan-summary.hbs',
+    'modules/intrinsics-pf2e-level-up-wizard/templates/partials/skill-selector.hbs',
+    'modules/intrinsics-pf2e-level-up-wizard/templates/partials/spell-choice.hbs'
+  ]);
+
   console.log(`${MODULE_TITLE} | Module initialized`);
 });
 
@@ -189,6 +198,39 @@ function registerHandlebarsHelpers() {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   });
+
+  // Add numbers
+  Handlebars.registerHelper('add', (a, b) => {
+    return Number(a) + Number(b);
+  });
+
+  // Subtract numbers
+  Handlebars.registerHelper('subtract', (a, b) => {
+    return Number(a) - Number(b);
+  });
+
+  // Generate a range of numbers
+  Handlebars.registerHelper('range', (start, end) => {
+    const result = [];
+    for (let i = start; i < end; i++) {
+      result.push(i);
+    }
+    return result;
+  });
+
+  // Strip HTML tags for plain text
+  Handlebars.registerHelper('plainText', (html) => {
+    if (!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  });
+
+  // Join array elements with separator
+  Handlebars.registerHelper('join', (array, separator = ', ') => {
+    if (!Array.isArray(array)) return '';
+    return array.join(separator);
+  });
 }
 
 // ============================================================================
@@ -275,15 +317,15 @@ function onGetActorSheetHeaderButtons(sheet, buttons) {
 
   // Add Level Up Wizard button
   if (game.settings.get(MODULE_NAME, 'show-level-up-button')) {
-    const currentLevel = actor.system.details.level.value;
-
     buttons.unshift({
       label: 'Level Up',
       class: 'intrinsics-level-up-wizard',
       icon: 'fas fa-arrow-up',
       onclick: async () => {
-        // Open wizard for next level
+        // Read current level when button is clicked (not when button is created)
+        const currentLevel = actor.system.details.level.value;
         const targetLevel = currentLevel + 1;
+
         if (targetLevel > 20) {
           ui.notifications.warn('Character is already at maximum level (20)');
           return;

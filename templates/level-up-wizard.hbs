@@ -1,0 +1,483 @@
+<div class="level-up-wizard-container">
+  <div class="wizard-header">
+    <h1 class="wizard-title">Level Up to {{targetLevel}}</h1>
+    <p class="wizard-subtitle">{{actorName}}</p>
+    <div class="wizard-progress-compact">
+      <div class="progress-bar-container">
+        <div class="progress-bar" style="width: {{progressPercent}}%;">
+          <span class="progress-bar-text">{{progressPercent}}%</span>
+        </div>
+      </div>
+      <div class="progress-counter">
+        {{completedRequirements}}/{{totalRequirements}} Requirements Met
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-content">
+  {{#if hasPlan}}
+  <div class="plan-prompt">
+    <div class="plan-prompt-header">
+      <div class="plan-prompt-icon">
+        <i class="fas fa-list-ol"></i>
+      </div>
+      <div>
+        <h3 class="plan-prompt-title">Build Plan Available</h3>
+      </div>
+    </div>
+    <div class="plan-prompt-content">
+      <p>A build plan exists for level {{targetLevel}}. You can apply it automatically or make manual selections.</p>
+    </div>
+    <div class="plan-prompt-actions">
+      <button type="button" class="btn btn-primary" data-action="applyPlan">
+        <i class="fas fa-check-circle"></i>
+        Apply Build Plan
+      </button>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if classFeatures.length}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-book-open"></i>
+      <h3 class="wizard-section-title">Class Features</h3>
+    </div>
+    <p class="wizard-section-description">Your class grants you the following features at level {{targetLevel}}:</p>
+    <div class="class-features-list">
+      {{#each classFeatures}}
+      <div class="class-feature-item">
+        <div class="class-feature-info">
+          <strong class="class-feature-name">{{this.name}}</strong>
+          {{#if this.system.description.value}}
+          <div class="class-feature-description">{{{this.system.description.value}}}</div>
+          {{/if}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{! Runesmith Progression Notification }}
+  {{#if (and isRunesmith runesmithChanges)}}
+  <div class="wizard-section runesmith-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-gem"></i>
+      <h3 class="wizard-section-title">Runesmith Progression</h3>
+    </div>
+    <div class="runesmith-notification">
+      {{#if runesmithChanges.runicRepertoireIncrease}}
+      <div class="runesmith-change">
+        <i class="fas fa-plus-circle"></i>
+        <span>Your <strong>Runic Repertoire</strong> has increased! You can now know <strong>{{runesmithChanges.current.runicRepertoire}}</strong> runes ({{runesmithChanges.runicRepertoireIncrease}} new).</span>
+      </div>
+      {{/if}}
+      {{#if runesmithChanges.maxEtchedRunesIncrease}}
+      <div class="runesmith-change">
+        <i class="fas fa-plus-circle"></i>
+        <span>Your <strong>Maximum Etched Runes</strong> has increased! You can now have <strong>{{runesmithChanges.current.maxEtchedRunes}}</strong> runes etched ({{runesmithChanges.maxEtchedRunesIncrease}} new).</span>
+      </div>
+      {{/if}}
+      <p class="runesmith-reminder">Remember to add your new runes to your character sheet via the compendium..</p>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.class}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-fist-raised"></i>
+      <h3 class="wizard-section-title">Class Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.classFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.classFeats}}</p>
+          <p class="feat-meta">Selected from build plan</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="classFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No class feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="classFeats">
+          <i class="fas fa-plus"></i> Select Class Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.ancestry}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-dna"></i>
+      <h3 class="wizard-section-title">Ancestry Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.ancestryFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.ancestryFeats}}</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="ancestryFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No ancestry feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="ancestryFeats">
+          <i class="fas fa-plus"></i> Select Ancestry Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.skill}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-hand-sparkles"></i>
+      <h3 class="wizard-section-title">Skill Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.skillFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.skillFeats}}</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="skillFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No skill feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="skillFeats">
+          <i class="fas fa-plus"></i> Select Skill Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.general}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-star"></i>
+      <h3 class="wizard-section-title">General Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.generalFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.generalFeats}}</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="generalFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No general feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="generalFeats">
+          <i class="fas fa-plus"></i> Select General Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if (gt featSlots.archetype 0)}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-book"></i>
+      <h3 class="wizard-section-title">Free Archetype Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.freeArchetypeFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.freeArchetypeFeats}}</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No archetype feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
+          <i class="fas fa-plus"></i> Select Archetype Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if (gt featSlots.mythic 0)}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-crown"></i>
+      <h3 class="wizard-section-title">Mythic Feat</h3>
+    </div>
+    <div class="feat-selection">
+      {{#if choices.mythicFeats}}
+      <div class="feat-selected">
+        <div class="feat-info">
+          <p class="feat-name">{{choicesWithNames.mythicFeats}}</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="mythicFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="feat-not-selected">
+        <p>No mythic feat selected</p>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="mythicFeats">
+          <i class="fas fa-plus"></i> Select Mythic Feat
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if abilityBoostInfo.hasBoosts}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-bolt"></i>
+      <h3 class="wizard-section-title">Ability Boosts</h3>
+    </div>
+    <div class="ability-boost-selection">
+      <div class="ability-boost-info">
+        <i class="fas fa-info-circle"></i>
+        <span>Select {{abilityBoostInfo.count}} ability scores to increase.</span>
+      </div>
+      <div class="ability-grid">
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'str')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="str">
+          <div class="ability-abbr">STR</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.str.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.str.mod}}</div>
+        </div>
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'dex')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="dex">
+          <div class="ability-abbr">DEX</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.dex.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.dex.mod}}</div>
+        </div>
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'con')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="con">
+          <div class="ability-abbr">CON</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.con.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.con.mod}}</div>
+        </div>
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'int')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="int">
+          <div class="ability-abbr">INT</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.int.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.int.mod}}</div>
+        </div>
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'wis')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="wis">
+          <div class="ability-abbr">WIS</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.wis.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.wis.mod}}</div>
+        </div>
+        <div class="ability-button {{#if (includes choices.abilityBoosts 'cha')}}selected{{/if}}"
+             data-action="toggleAbilityBoost"
+             data-ability="cha">
+          <div class="ability-abbr">CHA</div>
+          <div class="ability-score-display">Current: {{actor.system.abilities.cha.value}}</div>
+          <div class="ability-modifier">{{actor.system.abilities.cha.mod}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if cantripSelection}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-wand-sparkles"></i>
+      <h3 class="wizard-section-title">Cantrips</h3>
+    </div>
+    <p class="wizard-section-description">Select {{cantripSelection.maxSpells}} cantrips to learn. (Selected: {{cantripSelection.current.length}}/{{cantripSelection.maxSpells}})</p>
+    <div class="spell-selection">
+      {{#if (gt cantripSelection.current.length 0)}}
+      <div class="spells-selected">
+        <div class="spells-info">
+          <p class="spells-count">{{cantripSelection.current.length}} cantrip(s) selected</p>
+          {{#each cantripSelection.current}}
+          <p class="spell-name-item">{{choicesWithNames.cantrips.[@index]}}</p>
+          {{/each}}
+        </div>
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{cantripSelection.rank}}"
+                data-spell-type="cantrips"
+                data-max-spells="{{cantripSelection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="spells-not-selected">
+        <p>No cantrips selected</p>
+        <button type="button" class="btn btn-primary"
+                data-action="selectSpell"
+                data-rank="{{cantripSelection.rank}}"
+                data-spell-type="cantrips"
+                data-max-spells="{{cantripSelection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select Cantrips
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if rank1Selection}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-hat-wizard"></i>
+      <h3 class="wizard-section-title">Rank 1 Spells</h3>
+    </div>
+    <p class="wizard-section-description">Select {{rank1Selection.maxSpells}} rank 1 spells to learn. (Selected: {{rank1Selection.current.length}}/{{rank1Selection.maxSpells}})</p>
+    <div class="spell-selection">
+      {{#if (gt rank1Selection.current.length 0)}}
+      <div class="spells-selected">
+        <div class="spells-info">
+          <p class="spells-count">{{rank1Selection.current.length}} spell(s) selected</p>
+          {{#each rank1Selection.current}}
+          <p class="spell-name-item">{{choicesWithNames.rank1Spells.[@index]}}</p>
+          {{/each}}
+        </div>
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{rank1Selection.rank}}"
+                data-spell-type="rank1Spells"
+                data-max-spells="{{rank1Selection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="spells-not-selected">
+        <p>No rank 1 spells selected</p>
+        <button type="button" class="btn btn-primary"
+                data-action="selectSpell"
+                data-rank="{{rank1Selection.rank}}"
+                data-spell-type="rank1Spells"
+                data-max-spells="{{rank1Selection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select Spells
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if additionalSpellSelection}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-book-open"></i>
+      <h3 class="wizard-section-title">Learn Additional Spells</h3>
+    </div>
+    <p class="wizard-section-description">{{#if (eq additionalSpellSelection.type 'prepared')}}As a prepared caster, you learn {{additionalSpellSelection.maxSpells}} additional spells this level.{{else}}As a spontaneous caster, you learn {{additionalSpellSelection.maxSpells}} additional spell this level.{{/if}} (Selected: {{additionalSpellSelection.current.length}}/{{additionalSpellSelection.maxSpells}})</p>
+    <div class="spell-selection">
+      {{#if (gt additionalSpellSelection.current.length 0)}}
+      <div class="spells-selected">
+        <div class="spells-info">
+          <p class="spells-count">{{additionalSpellSelection.current.length}} spell(s) selected</p>
+          {{#each additionalSpellSelection.current}}
+          <p class="spell-name-item">{{lookup (lookup ../choicesWithNames ../additionalSpellSelection.spellKey) @index}}</p>
+          {{/each}}
+        </div>
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{additionalSpellSelection.rank}}"
+                data-spell-type="{{additionalSpellSelection.spellKey}}"
+                data-max-spells="{{additionalSpellSelection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <div class="spells-not-selected">
+        <p>No additional spells selected</p>
+        <button type="button" class="btn btn-primary"
+                data-action="selectSpell"
+                data-rank="{{additionalSpellSelection.rank}}"
+                data-spell-type="{{additionalSpellSelection.spellKey}}"
+                data-max-spells="{{additionalSpellSelection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select Spells
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if (gt skillIncreaseCount 0)}}
+  <div class="wizard-section">
+    <div class="wizard-section-header">
+      <i class="wizard-section-icon fas fa-graduation-cap"></i>
+      <h3 class="wizard-section-title">Skill Increases</h3>
+    </div>
+    <p class="wizard-section-description">Select {{skillIncreaseCount}} skills to increase proficiency. (Selected: {{choices.skillIncreases.length}}/{{skillIncreaseCount}})</p>
+    <div class="skill-selection">
+      <div class="skill-list">
+        {{#each availableSkills}}
+        <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+             data-action="toggleSkillIncrease"
+             data-skill="{{this.key}}">
+          <div class="skill-name-rank">
+            <div class="skill-name-display">{{this.name}}</div>
+            <div class="skill-rank-display">{{this.currentRankName}} → {{this.nextRankName}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+</div>
+
+  <div class="wizard-footer">
+    <div class="wizard-validation-container">
+      {{#unless allRequirementsMet}}
+      <div class="wizard-validation warning">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Complete all requirements above before submitting</span>
+      </div>
+      {{else}}
+      <div class="wizard-validation success">
+        <i class="fas fa-check-circle"></i>
+        <span>All requirements met! Ready to level up.</span>
+      </div>
+      {{/unless}}
+    </div>
+    <div class="wizard-footer-actions">
+      <button type="button" class="btn btn-secondary" data-action="cancel">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-success" data-action="submit" {{#unless allRequirementsMet}}disabled{{/unless}}>
+        <i class="fas fa-check"></i> Complete Level Up
+      </button>
+    </div>
+  </div>
+</div>

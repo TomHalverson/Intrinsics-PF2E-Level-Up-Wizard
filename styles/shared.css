@@ -532,3 +532,33 @@
 .intrinsics-level-up-wizard ::-webkit-scrollbar-thumb:hover {
   background: var(--iluw-accent-purple);
 }
+
+/* ========================================================================== */
+/* LEVEL RANGE FILTER */
+/* ========================================================================== */
+
+.filter-level-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-level-input {
+  width: 60px;
+  padding: 4px 8px;
+  background: var(--iluw-bg-secondary);
+  border: 1px solid var(--iluw-border-color);
+  border-radius: 4px;
+  color: var(--iluw-text-primary);
+  font-size: 14px;
+}
+
+.filter-level-input:focus {
+  outline: none;
+  border-color: var(--iluw-accent-purple);
+}
+
+.filter-level-range span {
+  color: var(--iluw-text-muted);
+  font-size: 14px;
+}

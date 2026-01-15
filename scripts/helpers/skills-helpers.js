@@ -1,5 +1,6 @@
 // Skills Helpers - Skill proficiency logic and skill increases
 import { MODULE_NAME, debugLog } from '../module.js';
+import * as VariantRulesHelpers from './variant-rules-helpers.js';
 
 // Skill proficiency ranks
 export const SKILL_PROFICIENCY_RANKS = {
@@ -171,7 +172,7 @@ export async function increaseSkillProficiency(actor, skillKey) {
  * @returns {Object|null} Potency info or null
  */
 export function getSkillPotencyForLevel(actor, targetLevel) {
-  const abpVariant = game.settings.get('pf2e', 'automaticBonusVariant');
+  const abpVariant = VariantRulesHelpers.getABPSetting();
 
   if (abpVariant === 'noABP') {
     return null;

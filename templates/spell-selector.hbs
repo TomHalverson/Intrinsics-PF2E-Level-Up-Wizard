@@ -1,0 +1,422 @@
+{{! Spell Selector Template }}
+
+<div class="spell-selector-container">
+  <div class="selector-header">
+    <h2 class="selector-title">{{title}} <span class="tradition-badge">{{capitalize tradition}}</span></h2>
+
+    {{! Tradition Selector }}
+    <div class="tradition-selector">
+      <label for="tradition-select">Spell Tradition:</label>
+      <select id="tradition-select" data-action="changeTradition">
+        {{#each traditions}}
+          <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+      {{#if autoDetectedTradition}}
+        <span class="tradition-hint">(Auto-detected: {{capitalize autoDetectedTradition}})</span>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="selector-filters">
+    {{! Search }}
+    <div class="filter-group">
+      <input type="text"
+             class="filter-search"
+             placeholder="{{localize 'intrinsics-pf2e-level-up-wizard.placeholders.search-spells'}}"
+             value="{{searchQuery}}">
+    </div>
+
+    {{! Trait Filter }}
+    <div class="filter-group">
+      <input type="text"
+             class="filter-search"
+             placeholder="Filter by trait..."
+             value="{{traitFilter}}"
+             data-filter="trait">
+    </div>
+
+    {{! Uncommon Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-uncommon"
+               {{#if showUncommon}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="uncommon">
+        <label for="show-uncommon">Show Uncommon</label>
+      </div>
+    </div>
+
+    {{! Rare Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-rare"
+               {{#if showRare}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="rare">
+        <label for="show-rare">Show Rare</label>
+      </div>
+    </div>
+
+    {{! Cantrip Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-cantrips"
+               {{#if showCantrips}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="cantrips">
+        <label for="show-cantrips">Include Cantrips</label>
+      </div>
+    </div>
+
+    {{! Level Range Filter }}
+    <div class="filter-group">
+      <label class="filter-label">Level Range</label>
+      <div class="filter-level-range">
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Min"
+               value="{{minLevel}}"
+               min="0"
+               max="10"
+               data-action="updateFilters"
+               data-filter="minLevel">
+        <span>to</span>
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Max"
+               value="{{maxLevel}}"
+               min="0"
+               max="10"
+               data-action="updateFilters"
+               data-filter="maxLevel">
+      </div>
+    </div>
+  </div>
+
+  <div class="selector-content">
+  {{#if comparisonMode}}
+  {{! COMPARISON VIEW }}
+  <div class="comparison-mode">
+    {{#each comparisonDetails as |spell index|}}
+    <div class="comparison-column">
+      <div class="comparison-header">
+        <span class="comparison-number">{{add index 1}}</span>
+        <i class="fas fa-times comparison-close"
+           data-action="removeFromCompare"
+           data-spell-uuid="{{spell.uuid}}"></i>
+      </div>
+
+      <div class="spell-preview-header">
+        <h3 class="spell-preview-title">{{spell.name}}</h3>
+        <div class="spell-preview-meta">
+          <span><strong>Rank:</strong> {{#if (eq spell.rank 0)}}Cantrip{{else}}{{spell.rank}}{{/if}}</span>
+          <span><strong>Tradition:</strong> {{join spell.traditions ', '}}</span>
+          <span><strong>Rarity:</strong> {{spell.rarity}}</span>
+        </div>
+
+        {{#if spell.traits}}
+        <div class="spell-preview-traits">
+          {{#each spell.traits as |trait|}}
+          <span class="trait-badge">{{trait}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if spell.school}}
+      <div class="spell-preview-section">
+        <h4 class="spell-preview-section-title">School</h4>
+        <div class="spell-preview-text">
+          {{capitalize spell.school}}
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="spell-preview-stats">
+        {{#if spell.castTime}}
+        <div class="spell-stat">
+          <strong>Cast:</strong> {{spell.castTime}}
+        </div>
+        {{/if}}
+
+        {{#if spell.range}}
+        <div class="spell-stat">
+          <strong>Range:</strong> {{spell.range}}
+        </div>
+        {{/if}}
+
+        {{#if spell.area}}
+        <div class="spell-stat">
+          <strong>Area:</strong> {{spell.area}}
+        </div>
+        {{/if}}
+
+        {{#if spell.targets}}
+        <div class="spell-stat">
+          <strong>Targets:</strong> {{spell.targets}}
+        </div>
+        {{/if}}
+
+        {{#if spell.duration}}
+        <div class="spell-stat">
+          <strong>Duration:</strong> {{spell.duration}}
+        </div>
+        {{/if}}
+
+        {{#if spell.save}}
+        <div class="spell-stat">
+          <strong>Save:</strong> {{spell.save}}
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="spell-preview-section">
+        <h4 class="spell-preview-section-title">Description</h4>
+        <div class="spell-preview-description">
+          {{{spell.description}}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  {{else}}
+  {{! NORMAL VIEW }}
+    <div class="spell-list-column">
+      <div class="spell-list-info">
+        <span>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.spell-count' count=spellCount}}</span>
+        <span class="spell-count">{{spellCount}}</span>
+        <span class="selection-indicator">
+          {{localize 'intrinsics-pf2e-level-up-wizard.messages.info.selected-count' current=selectionsCount max=maxSpells}}
+          ({{selectionsCount}}/{{maxSpells}})
+        </span>
+      </div>
+
+      <div class="spell-list-container">
+        {{#if spells}}
+        {{#each spells as |spell|}}
+        {{> spellCard spell=spell}}
+        {{/each}}
+
+        {{else}}
+        {{! Empty state }}
+        <div class="spell-list-empty">
+          <i class="fas fa-search"></i>
+          <p>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.no-spells-available'}}</p>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+
+    <div class="spell-preview-column">
+      <div class="spell-preview-panel">
+        {{#if activeSpellDetails}}
+        {{! Spell selected - show preview }}
+        <div class="spell-preview-header">
+          <h3 class="spell-preview-title">{{activeSpellDetails.name}}</h3>
+          <div class="spell-preview-meta">
+            <span><strong>Rank:</strong> {{#if (eq activeSpellDetails.rank 0)}}Cantrip{{else}}{{activeSpellDetails.rank}}{{/if}}</span>
+            <span><strong>Tradition:</strong> {{join activeSpellDetails.traditions ', '}}</span>
+            <span><strong>Rarity:</strong> {{activeSpellDetails.rarity}}</span>
+          </div>
+
+          {{#if activeSpellDetails.traits}}
+          <div class="spell-preview-traits">
+            {{#each activeSpellDetails.traits as |trait|}}
+            <span class="trait-badge">{{trait}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+
+        {{#if activeSpellDetails.school}}
+        <div class="spell-preview-section">
+          <h4 class="spell-preview-section-title">School</h4>
+          <div class="spell-preview-text">
+            {{capitalize activeSpellDetails.school}}
+          </div>
+        </div>
+        {{/if}}
+
+        <div class="spell-preview-stats">
+          {{#if activeSpellDetails.castTime}}
+          <div class="spell-stat">
+            <strong>Cast:</strong> {{activeSpellDetails.castTime}}
+          </div>
+          {{/if}}
+
+          {{#if activeSpellDetails.range}}
+          <div class="spell-stat">
+            <strong>Range:</strong> {{activeSpellDetails.range}}
+          </div>
+          {{/if}}
+
+          {{#if activeSpellDetails.area}}
+          <div class="spell-stat">
+            <strong>Area:</strong> {{activeSpellDetails.area}}
+          </div>
+          {{/if}}
+
+          {{#if activeSpellDetails.targets}}
+          <div class="spell-stat">
+            <strong>Targets:</strong> {{activeSpellDetails.targets}}
+          </div>
+          {{/if}}
+
+          {{#if activeSpellDetails.duration}}
+          <div class="spell-stat">
+            <strong>Duration:</strong> {{activeSpellDetails.duration}}
+          </div>
+          {{/if}}
+
+          {{#if activeSpellDetails.save}}
+          <div class="spell-stat">
+            <strong>Save:</strong> {{activeSpellDetails.save}}
+          </div>
+          {{/if}}
+        </div>
+
+        <div class="spell-preview-section">
+          <h4 class="spell-preview-section-title">Description</h4>
+          <div class="spell-preview-description">
+            {{{activeSpellDetails.description}}}
+          </div>
+        </div>
+
+        {{! Choose/Remove Button }}
+        <div class="spell-preview-actions">
+          {{#if activeSpellSelected}}
+          <button type="button"
+                  class="btn btn-danger btn-block"
+                  data-action="toggleSpellSelection"
+                  data-spell-uuid="{{activeSpell}}">
+            <i class="fas fa-minus-circle"></i> Remove from Selection
+          </button>
+          {{else}}
+          <button type="button"
+                  class="btn btn-primary btn-block"
+                  data-action="toggleSpellSelection"
+                  data-spell-uuid="{{activeSpell}}"
+                  {{#unless canSelectMore}}disabled{{/unless}}>
+            <i class="fas fa-plus-circle"></i> {{#if canSelectMore}}Add to Selection{{else}}Maximum Selected{{/if}}
+          </button>
+          {{/if}}
+        </div>
+
+        {{else}}
+        {{! No spell selected - placeholder }}
+        <div class="spell-preview-placeholder">
+          <i class="fas fa-hand-pointer"></i>
+          <p>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.select-spell'}}</p>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="selector-footer">
+    <div class="selector-actions-left">
+      {{#if (and (not comparisonMode) canAddToCompare activeSpell)}}
+      <button type="button"
+              class="btn btn-secondary"
+              data-action="addToCompare"
+              data-spell-uuid="{{activeSpell}}">
+        <i class="fas fa-clone"></i> Add to Compare
+      </button>
+      {{/if}}
+
+      <button type="button"
+              class="compare-toggle {{#if comparisonMode}}active{{/if}}"
+              data-action="compareToggle">
+        <i class="fas fa-balance-scale"></i>
+        {{#if comparisonMode}}
+          Exit Comparison ({{comparisonSpells.length}})
+        {{else}}
+          Compare Mode
+        {{/if}}
+      </button>
+    </div>
+
+    <div class="selector-actions-right">
+      <button type="button" class="btn btn-secondary" data-action="cancel">
+        <i class="fas fa-times"></i> {{localize 'intrinsics-pf2e-level-up-wizard.buttons.cancel'}}
+      </button>
+
+      {{#unless comparisonMode}}
+      <button type="button"
+              class="btn btn-primary"
+              data-action="confirm"
+              {{#unless canConfirm}}disabled{{/unless}}>
+        <i class="fas fa-check"></i> {{localize 'intrinsics-pf2e-level-up-wizard.buttons.confirm'}}
+      </button>
+      {{/unless}}
+    </div>
+  </div>
+</div>
+
+{{! Spell Card Partial }}
+{{#*inline "spellCard"}}
+<div class="spell-card {{#if (eq spell.uuid ../activeSpell)}}active{{/if}} {{#if spell.isSelected}}selected{{/if}}"
+     data-action="previewSpell"
+     data-spell-uuid="{{spell.uuid}}">
+
+  <div class="spell-card-header">
+    <img src="{{spell.img}}" alt="{{spell.name}}" class="spell-card-icon">
+
+    <div class="spell-card-info">
+      <div class="spell-card-title">
+        {{spell.name}}
+        <span class="spell-card-rank">
+          {{#if (eq spell.system.level.value 0)}}Cantrip{{else}}Rank {{spell.system.level.value}}{{/if}}
+        </span>
+        {{#if (notEqual spell.rarity 'common')}}
+        <span class="rarity-badge {{spell.rarityClass}}">{{capitalize spell.rarity}}</span>
+        {{/if}}
+      </div>
+      <div class="spell-card-school">{{capitalize spell.school}}</div>
+    </div>
+
+    {{#if spell.isSelected}}
+    <div class="spell-card-selected">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    {{/if}}
+  </div>
+
+  {{#if spell.system.traits.value}}
+  <div class="spell-card-traits">
+    {{#each spell.system.traits.value as |trait|}}
+    <span class="trait-badge trait-badge-small">{{trait}}</span>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{#if spell.system.description.value}}
+  <div class="spell-card-description">
+    {{plainText spell.system.description.value}}
+  </div>
+  {{/if}}
+
+  <div class="spell-card-meta">
+    {{#if spell.system.time.value}}
+    <span><i class="fas fa-clock"></i> {{spell.system.time.value}}</span>
+    {{/if}}
+    {{#if spell.system.range.value}}
+    <span><i class="fas fa-arrows-alt"></i> {{spell.system.range.value}}</span>
+    {{/if}}
+  </div>
+
+  <div class="spell-card-toggle" data-action="toggleSpell" data-spell-uuid="{{spell.uuid}}">
+    {{#if spell.isSelected}}
+    <i class="fas fa-minus-circle"></i> Remove
+    {{else}}
+    <i class="fas fa-plus-circle"></i> Add
+    {{/if}}
+  </div>
+</div>
+{{/inline}}

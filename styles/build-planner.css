@@ -10,6 +10,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.build-planner-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ========================================================================== */
@@ -25,14 +33,14 @@
   border-bottom: 2px solid var(--iluw-border-color);
 }
 
-.level-navigator {
+.build-planner-app .level-navigator {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.level-nav-button {
+.build-planner-app .level-nav-button {
   width: 36px;
   height: 36px;
   border-radius: 6px;
@@ -48,31 +56,31 @@
   justify-content: center;
 }
 
-.level-nav-button:hover {
+.build-planner-app .level-nav-button:hover {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
   transform: translateY(-1px);
 }
 
-.level-nav-button.active {
+.build-planner-app .level-nav-button.active {
   background: var(--iluw-purple-gradient);
   border-color: var(--iluw-accent-purple);
   color: white;
   box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
 }
 
-.level-nav-button.complete {
+.build-planner-app .level-nav-button.complete {
   background: var(--iluw-accent-green);
   border-color: var(--iluw-accent-green);
   color: white;
 }
 
-.level-nav-button.incomplete {
+.build-planner-app .level-nav-button.incomplete {
   border-color: var(--iluw-accent-yellow);
   color: var(--iluw-text-muted);
 }
 
-.planner-actions {
+.build-planner-app .planner-actions {
   display: flex;
   gap: 8px;
 }
@@ -87,34 +95,34 @@
   overflow-y: auto;
 }
 
-.level-header {
+.build-planner-app .level-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.level-title {
+.build-planner-app .level-title {
   font-size: 28px;
   color: var(--iluw-text-primary);
   font-weight: bold;
   margin: 0;
 }
 
-.level-status-badge {
+.build-planner-app .level-status-badge {
   padding: 6px 14px;
   border-radius: 16px;
   font-size: 13px;
   font-weight: 600;
 }
 
-.level-status-badge.complete {
+.build-planner-app .level-status-badge.complete {
   background: rgba(16, 185, 129, 0.2);
   color: var(--iluw-accent-green);
   border: 1px solid var(--iluw-accent-green);
 }
 
-.level-status-badge.incomplete {
+.build-planner-app .level-status-badge.incomplete {
   background: rgba(251, 191, 36, 0.2);
   color: var(--iluw-accent-yellow);
   border: 1px solid var(--iluw-accent-yellow);
@@ -124,7 +132,11 @@
 /* CHOICE SECTIONS */
 /* ========================================================================== */
 
-.choice-section {
+/* ========================================================================== */
+/* INFO SECTION (for class features, etc.) */
+/* ========================================================================== */
+
+.build-planner-app .info-section {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -132,14 +144,95 @@
   margin-bottom: 16px;
 }
 
-.choice-section-header {
+.build-planner-app .info-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.build-planner-app .info-section-header i {
+  color: var(--iluw-accent-blue);
+  font-size: 18px;
+}
+
+.build-planner-app .info-section-title {
+  font-size: 18px;
+  color: var(--iluw-text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.build-planner-app .info-section-description {
+  color: var(--iluw-text-secondary);
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.build-planner-app .class-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.build-planner-app .class-feature-item {
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.build-planner-app .class-feature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.build-planner-app .class-feature-name {
+  color: var(--iluw-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.build-planner-app .class-feature-description {
+  color: var(--iluw-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.build-planner-app .class-feature-description p {
+  margin: 8px 0;
+}
+
+.build-planner-app .class-feature-description p:first-child {
+  margin-top: 0;
+}
+
+.build-planner-app .class-feature-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================================================== */
+/* CHOICE SECTION */
+/* ========================================================================== */
+
+.build-planner-app .choice-section {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.build-planner-app .choice-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
 }
 
-.choice-section-title {
+.build-planner-app .choice-section-title {
   font-size: 18px;
   color: var(--iluw-text-primary);
   font-weight: 600;
@@ -149,16 +242,16 @@
   gap: 8px;
 }
 
-.choice-section-title i {
+.build-planner-app .choice-section-title i {
   color: var(--iluw-accent-purple);
 }
 
-.choice-required {
+.build-planner-app .choice-required {
   color: var(--iluw-accent-red);
   font-size: 12px;
 }
 
-.choice-display {
+.build-planner-app .choice-display {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -169,12 +262,12 @@
   min-height: 60px;
 }
 
-.choice-display.has-choice {
+.build-planner-app .choice-display.has-choice {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.05);
 }
 
-.choice-icon {
+.build-planner-app .choice-icon {
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -182,18 +275,18 @@
   border: 2px solid var(--iluw-border-color);
 }
 
-.choice-details {
+.build-planner-app .choice-details {
   flex: 1;
 }
 
-.choice-name {
+.build-planner-app .choice-name {
   font-size: 16px;
   color: var(--iluw-text-primary);
   font-weight: 600;
   margin: 0 0 4px 0;
 }
 
-.choice-meta {
+.build-planner-app .choice-meta {
   font-size: 12px;
   color: var(--iluw-text-muted);
   display: flex;
@@ -201,12 +294,12 @@
   flex-wrap: wrap;
 }
 
-.choice-placeholder {
+.build-planner-app .choice-placeholder {
   color: var(--iluw-text-muted);
   font-style: italic;
 }
 
-.choice-actions {
+.build-planner-app .choice-actions {
   display: flex;
   gap: 8px;
 }
@@ -215,13 +308,13 @@
 /* ABILITY BOOSTS */
 /* ========================================================================== */
 
-.ability-boost-grid {
+.build-planner-app .ability-boost-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
 }
 
-.ability-boost-button {
+.build-planner-app .ability-boost-button {
   padding: 12px;
   background: var(--iluw-bg-primary);
   border: 2px solid var(--iluw-border-color);
@@ -231,32 +324,32 @@
   text-align: center;
 }
 
-.ability-boost-button:hover {
+.build-planner-app .ability-boost-button:hover {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
   transform: translateY(-1px);
 }
 
-.ability-boost-button.selected {
+.build-planner-app .ability-boost-button.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.15);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 }
 
-.ability-boost-button.disabled {
+.build-planner-app .ability-boost-button.disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.ability-name {
+.build-planner-app .ability-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--iluw-text-primary);
   margin-bottom: 4px;
 }
 
-.ability-score {
+.build-planner-app .ability-score {
   font-size: 12px;
   color: var(--iluw-text-muted);
 }
@@ -265,14 +358,22 @@
 /* SKILL INCREASES */
 /* ========================================================================== */
 
-.skill-increase-list {
+.build-planner-app .skill-selection {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.build-planner-app .skill-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
 }
 
-.skill-increase-item {
-  padding: 10px;
+.build-planner-app .skill-item {
+  padding: 12px;
   background: var(--iluw-bg-primary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 6px;
@@ -283,44 +384,65 @@
   justify-content: space-between;
 }
 
-.skill-increase-item:hover {
+.build-planner-app .skill-item:hover:not(.disabled) {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
 }
 
-.skill-increase-item.selected {
+.build-planner-app .skill-item.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.1);
 }
 
-.skill-rank {
+.build-planner-app .skill-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.build-planner-app .skill-name-rank {
+  flex: 1;
+}
+
+.build-planner-app .skill-name-display {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  margin-bottom: 2px;
+}
+
+.build-planner-app .skill-rank-display {
+  font-size: 11px;
+  color: var(--iluw-text-muted);
+}
+
+.build-planner-app .skill-rank {
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
 }
 
-.skill-rank.untrained {
+.build-planner-app .skill-rank.untrained {
   background: rgba(102, 102, 102, 0.2);
   color: var(--iluw-untrained);
 }
 
-.skill-rank.trained {
+.build-planner-app .skill-rank.trained {
   background: rgba(94, 0, 0, 0.2);
   color: #cd5c5c;
 }
 
-.skill-rank.expert {
+.build-planner-app .skill-rank.expert {
   background: rgba(0, 0, 128, 0.2);
   color: #6495ed;
 }
 
-.skill-rank.master {
+.build-planner-app .skill-rank.master {
   background: rgba(0, 128, 0, 0.2);
   color: #90ee90;
 }
 
-.skill-rank.legendary {
+.build-planner-app .skill-rank.legendary {
   background: rgba(255, 140, 0, 0.2);
   color: var(--iluw-legendary);
 }
@@ -329,11 +451,11 @@
 /* NOTES */
 /* ========================================================================== */
 
-.level-notes {
+.build-planner-app .level-notes {
   margin-top: 20px;
 }
 
-.level-notes textarea {
+.build-planner-app .level-notes textarea {
   min-height: 100px;
   resize: vertical;
 }
@@ -342,17 +464,17 @@
 /* SUMMARY VIEW */
 /* ========================================================================== */
 
-.summary-view {
+.build-planner-app .summary-view {
   padding: 20px;
 }
 
-.summary-levels {
+.build-planner-app .summary-levels {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
 }
 
-.summary-level-card {
+.build-planner-app .summary-level-card {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -360,39 +482,212 @@
   transition: all 0.2s ease;
 }
 
-.summary-level-card:hover {
+.build-planner-app .summary-level-card:hover {
   border-color: var(--iluw-accent-blue);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.summary-level-card.complete {
+.build-planner-app .summary-level-card.complete {
   border-left: 4px solid var(--iluw-accent-green);
 }
 
-.summary-level-card.incomplete {
+.build-planner-app .summary-level-card.incomplete {
   border-left: 4px solid var(--iluw-accent-yellow);
 }
 
-.summary-level-header {
+.build-planner-app .summary-level-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
 }
 
-.summary-level-number {
+.build-planner-app .summary-level-number {
   font-size: 20px;
   font-weight: bold;
   color: var(--iluw-text-primary);
 }
 
-.summary-choices {
+.build-planner-app .summary-choices {
   font-size: 13px;
   color: var(--iluw-text-secondary);
   line-height: 1.6;
 }
 
-.summary-choices strong {
+.build-planner-app .summary-choices strong {
   color: var(--iluw-accent-purple);
+}
+/* ========================================================================== */
+/* PLAN SUMMARY (ENHANCED) */
+/* ========================================================================== */
+
+.build-planner-app .plan-summary {
+  padding: 20px;
+}
+
+.build-planner-app .summary-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.build-planner-app .summary-header h2 {
+  font-size: 28px;
+  color: var(--iluw-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.build-planner-app .summary-header p {
+  color: var(--iluw-text-secondary);
+  font-size: 15px;
+  margin: 0;
+}
+
+.build-planner-app .summary-levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.build-planner-app .summary-level {
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.build-planner-app .summary-level:hover {
+  border-color: var(--iluw-accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.build-planner-app .summary-level.complete {
+  border-left: 4px solid var(--iluw-accent-green);
+}
+
+.build-planner-app .summary-level.incomplete {
+  border-left: 4px solid var(--iluw-accent-yellow);
+}
+
+.build-planner-app .summary-level.empty {
+  border-left: 4px solid var(--iluw-text-muted);
+  opacity: 0.6;
+}
+
+.build-planner-app .summary-level-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.build-planner-app .summary-level.complete .summary-level-status {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--iluw-accent-green);
+}
+
+.build-planner-app .summary-level.incomplete .summary-level-status {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--iluw-accent-yellow);
+}
+
+.build-planner-app .summary-level.empty .summary-level-status {
+  background: rgba(153, 153, 153, 0.2);
+  color: var(--iluw-text-muted);
+}
+
+.build-planner-app .summary-level-choices {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.build-planner-app .summary-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--iluw-text-secondary);
+  padding: 4px 8px;
+  background: var(--iluw-bg-primary);
+  border-radius: 4px;
+}
+
+.build-planner-app .summary-choice i {
+  color: var(--iluw-accent-purple);
+  width: 16px;
+  text-align: center;
+}
+
+.build-planner-app .summary-level-notes {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--iluw-bg-primary);
+  border-left: 3px solid var(--iluw-accent-blue);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--iluw-text-muted);
+  font-style: italic;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.build-planner-app .summary-level-notes i {
+  margin-top: 2px;
+  color: var(--iluw-accent-blue);
+}
+
+/* ========================================================================== */
+/* CHOICE INFO BADGES */
+/* ========================================================================== */
+
+.build-planner-app .choice-info {
+  font-size: 12px;
+  color: var(--iluw-text-muted);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(155, 89, 182, 0.1);
+  border-radius: 12px;
+}
+
+.build-planner-app .choice-required {
+  color: var(--iluw-accent-red);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+}
+
+/* ========================================================================== */
+/* SPELL NAMES LIST */
+/* ========================================================================== */
+
+.build-planner-app .spell-names-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.build-planner-app .spell-name-item {
+  color: var(--iluw-text-secondary);
+  font-size: 14px;
+  margin: 0;
+  padding: 4px 8px;
+  background: rgba(155, 89, 182, 0.05);
+  border-radius: 4px;
+}
+
+.build-planner-app .spell-name-item:before {
+  content: "• ";
+  color: var(--iluw-accent-purple);
+  font-weight: bold;
 }

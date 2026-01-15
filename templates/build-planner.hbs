@@ -1,0 +1,507 @@
+<div class="build-planner-container">
+  <div class="build-planner-header">
+    <div class="level-navigator">
+      {{#each levels}}
+      <button type="button"
+              class="level-nav-button {{#if isActive}}active{{/if}} {{#if isComplete}}complete{{else}}incomplete{{/if}}"
+              data-action="selectLevel"
+              data-level="{{number}}"
+              title="Level {{number}}{{#if isCurrent}} (Current){{/if}}">
+        {{number}}
+      </button>
+      {{/each}}
+    </div>
+    <div class="planner-actions">
+      <button type="button" class="btn btn-secondary btn-small" data-action="showSummary">
+        <i class="fas fa-list"></i> Summary
+      </button>
+      <button type="button" class="btn btn-secondary btn-small" data-action="exportPlan">
+        <i class="fas fa-download"></i> Export
+      </button>
+      <button type="button" class="btn btn-secondary btn-small" data-action="importPlan">
+        <i class="fas fa-upload"></i> Import
+      </button>
+      <button type="button" class="btn btn-primary btn-small" data-action="savePlan">
+        <i class="fas fa-save"></i> Save
+      </button>
+    </div>
+  </div>
+
+  <div class="build-planner-content">
+  {{#if (eq viewMode 'level')}}
+  {{! LEVEL VIEW }}
+  <div class="level-header">
+    <h2 class="level-title">Level {{selectedLevel}}</h2>
+    <span class="level-status-badge {{#if levelData.applied}}complete{{else}}incomplete{{/if}}">
+      {{#if levelData.applied}}Applied{{else}}Planning{{/if}}
+    </span>
+  </div>
+
+  {{#if variantRuleConflicts}}
+  <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div>
+      <strong>Variant Rule Conflict</strong>
+      <p>Variant rules have changed since this plan was created. Some choices may be invalid.</p>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if classFeatures.length}}
+  <div class="info-section">
+    <div class="info-section-header">
+      <i class="fas fa-book-open"></i>
+      <h3 class="info-section-title">Class Features</h3>
+    </div>
+    <p class="info-section-description">Your class grants you the following features at level {{selectedLevel}}:</p>
+    <div class="class-features-list">
+      {{#each classFeatures}}
+      <div class="class-feature-item">
+        <div class="class-feature-info">
+          <strong class="class-feature-name">{{this.name}}</strong>
+          {{#if this.system.description.value}}
+          <div class="class-feature-description">{{{this.system.description.value}}}</div>
+          {{/if}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.class}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-fist-raised"></i>
+        Class Feat
+      </div>
+      <span class="choice-required">Required</span>
+    </div>
+    <div class="choice-display {{#if choices.classFeats}}has-choice{{/if}}">
+      {{#if choices.classFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.classFeats}}</p>
+        <div class="choice-meta">
+          <span>Class Feat</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="classFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No class feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="classFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.ancestry}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-dna"></i>
+        Ancestry Feat
+      </div>
+      <span class="choice-required">Required</span>
+    </div>
+    <div class="choice-display {{#if choices.ancestryFeats}}has-choice{{/if}}">
+      {{#if choices.ancestryFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.ancestryFeats}}</p>
+        <div class="choice-meta">
+          <span>Ancestry Feat</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="ancestryFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No ancestry feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="ancestryFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.skill}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-hand-sparkles"></i>
+        Skill Feat
+      </div>
+      <span class="choice-required">Required</span>
+    </div>
+    <div class="choice-display {{#if choices.skillFeats}}has-choice{{/if}}">
+      {{#if choices.skillFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.skillFeats}}</p>
+        <div class="choice-meta">
+          <span>Skill Feat</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="skillFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No skill feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="skillFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.general}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-star"></i>
+        General Feat
+      </div>
+      <span class="choice-required">Required</span>
+    </div>
+    <div class="choice-display {{#if choices.generalFeats}}has-choice{{/if}}">
+      {{#if choices.generalFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.generalFeats}}</p>
+        <div class="choice-meta">
+          <span>General Feat</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="generalFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No general feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="generalFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.archetype}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-book"></i>
+        Free Archetype Feat
+      </div>
+    </div>
+    <div class="choice-display {{#if choices.freeArchetypeFeats}}has-choice{{/if}}">
+      {{#if choices.freeArchetypeFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.freeArchetypeFeats}}</p>
+        <div class="choice-meta">
+          <span>Free Archetype</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No archetype feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if featSlots.mythic}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-crown"></i>
+        Mythic Feat
+      </div>
+    </div>
+    <div class="choice-display {{#if choices.mythicFeats}}has-choice{{/if}}">
+      {{#if choices.mythicFeats}}
+      <div class="choice-details">
+        <p class="choice-name">{{choicesWithNames.mythicFeats}}</p>
+        <div class="choice-meta">
+          <span>Mythic Feat</span>
+          <span>Level {{selectedLevel}}</span>
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectFeat" data-feat-type="mythicFeats">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No mythic feat selected</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectFeat" data-feat-type="mythicFeats">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if cantripSelection}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-wand-sparkles"></i>
+        Cantrips
+      </div>
+      <span class="choice-required">Required: {{cantripSelection.maxSpells}}</span>
+    </div>
+    <div class="choice-display {{#if (gt cantripSelection.current.length 0)}}has-choice{{/if}}">
+      {{#if (gt cantripSelection.current.length 0)}}
+      <div class="choice-details">
+        <p class="choice-name">{{cantripSelection.current.length}} cantrip(s) selected</p>
+        <div class="choice-meta">
+          {{#each cantripSelection.current}}
+          <span>{{lookup ../choicesWithNames.cantrips @index}}</span>
+          {{/each}}
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{cantripSelection.rank}}"
+                data-spell-type="cantrips"
+                data-max-spells="{{cantripSelection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No cantrips selected ({{cantripSelection.current.length}}/{{cantripSelection.maxSpells}})</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small"
+                data-action="selectSpell"
+                data-rank="{{cantripSelection.rank}}"
+                data-spell-type="cantrips"
+                data-max-spells="{{cantripSelection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if rank1Selection}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-hat-wizard"></i>
+        Rank 1 Spells
+      </div>
+      <span class="choice-required">Required: {{rank1Selection.maxSpells}}</span>
+    </div>
+    <div class="choice-display {{#if (gt rank1Selection.current.length 0)}}has-choice{{/if}}">
+      {{#if (gt rank1Selection.current.length 0)}}
+      <div class="choice-details">
+        <p class="choice-name">{{rank1Selection.current.length}} rank 1 spell(s) selected</p>
+        <div class="choice-meta">
+          {{#each rank1Selection.current}}
+          <span>{{lookup ../choicesWithNames.rank1Spells @index}}</span>
+          {{/each}}
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{rank1Selection.rank}}"
+                data-spell-type="rank1Spells"
+                data-max-spells="{{rank1Selection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No rank 1 spells selected ({{rank1Selection.current.length}}/{{rank1Selection.maxSpells}})</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small"
+                data-action="selectSpell"
+                data-rank="{{rank1Selection.rank}}"
+                data-spell-type="rank1Spells"
+                data-max-spells="{{rank1Selection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if additionalSpellSelection}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-book-open"></i>
+        Learn Additional Spells
+      </div>
+      <span class="choice-required">Required: {{additionalSpellSelection.maxSpells}}</span>
+    </div>
+    <div class="choice-display {{#if (gt additionalSpellSelection.current.length 0)}}has-choice{{/if}}">
+      {{#if (gt additionalSpellSelection.current.length 0)}}
+      <div class="choice-details">
+        <p class="choice-name">{{additionalSpellSelection.current.length}} spell(s) selected</p>
+        <div class="choice-meta">
+          {{#each additionalSpellSelection.current}}
+          <span>{{lookup (lookup ../choicesWithNames ../additionalSpellSelection.spellKey) @index}}</span>
+          {{/each}}
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small"
+                data-action="selectSpell"
+                data-rank="{{additionalSpellSelection.rank}}"
+                data-spell-type="{{additionalSpellSelection.spellKey}}"
+                data-max-spells="{{additionalSpellSelection.maxSpells}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No additional spells selected ({{additionalSpellSelection.current.length}}/{{additionalSpellSelection.maxSpells}})</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small"
+                data-action="selectSpell"
+                data-rank="{{additionalSpellSelection.rank}}"
+                data-spell-type="{{additionalSpellSelection.spellKey}}"
+                data-max-spells="{{additionalSpellSelection.maxSpells}}">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if abilityBoostInfo.hasBoosts}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-bolt"></i>
+        Ability Boosts
+      </div>
+      <span class="choice-required">Required: {{abilityBoostInfo.count}}</span>
+    </div>
+    <div class="ability-boost-grid">
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'str')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="str">
+        <div class="ability-name">Strength</div>
+        <div class="ability-score">{{actor.system.abilities.str.value}} ({{actor.system.abilities.str.mod}})</div>
+      </div>
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'dex')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="dex">
+        <div class="ability-name">Dexterity</div>
+        <div class="ability-score">{{actor.system.abilities.dex.value}} ({{actor.system.abilities.dex.mod}})</div>
+      </div>
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'con')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="con">
+        <div class="ability-name">Constitution</div>
+        <div class="ability-score">{{actor.system.abilities.con.value}} ({{actor.system.abilities.con.mod}})</div>
+      </div>
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'int')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="int">
+        <div class="ability-name">Intelligence</div>
+        <div class="ability-score">{{actor.system.abilities.int.value}} ({{actor.system.abilities.int.mod}})</div>
+      </div>
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'wis')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="wis">
+        <div class="ability-name">Wisdom</div>
+        <div class="ability-score">{{actor.system.abilities.wis.value}} ({{actor.system.abilities.wis.mod}})</div>
+      </div>
+      <div class="ability-boost-button {{#if (includes choices.abilityBoosts 'cha')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="cha">
+        <div class="ability-name">Charisma</div>
+        <div class="ability-score">{{actor.system.abilities.cha.value}} ({{actor.system.abilities.cha.mod}})</div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if (gt skillIncreaseCount 0)}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-graduation-cap"></i>
+        Skill Increases
+      </div>
+      <span class="choice-required">Selected: {{choices.skillIncreases.length}}/{{skillIncreaseCount}}</span>
+    </div>
+    <div class="skill-selection">
+      <div class="skill-list">
+        {{#each availableSkills}}
+        <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+             data-action="toggleSkillIncrease"
+             data-skill="{{this.key}}">
+          <div class="skill-name-rank">
+            <div class="skill-name-display">{{this.name}}</div>
+            <div class="skill-rank-display">{{this.currentRankName}} → {{this.nextRankName}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  <div class="level-notes">
+    <h4>Notes</h4>
+    <textarea placeholder="Add notes about your plans for this level..." rows="3">{{notes}}</textarea>
+  </div>
+
+  {{else}}
+  {{! SUMMARY VIEW }}
+  <div class="summary-view">
+    <div class="level-header">
+      <h2 class="level-title">Build Summary</h2>
+      <button type="button" class="btn btn-secondary" data-action="showLevel">
+        <i class="fas fa-arrow-left"></i> Back to Level View
+      </button>
+    </div>
+
+    {{> modules/intrinsics-pf2e-level-up-wizard/templates/partials/plan-summary.hbs summaryLevels=summaryLevels actor=actor}}
+  </div>
+  {{/if}}
+  </div>
+</div>

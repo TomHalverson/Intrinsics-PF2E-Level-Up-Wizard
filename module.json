@@ -20,6 +20,7 @@
     "styles/build-planner.css",
     "styles/level-up-wizard.css",
     "styles/feat-selector.css",
+    "styles/spell-selector.css",
     "styles/shared.css"
   ],
   "languages": [

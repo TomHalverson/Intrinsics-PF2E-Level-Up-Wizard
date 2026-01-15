@@ -1,5 +1,6 @@
 // Build Plan Manager - Manages build plan CRUD operations and validation
 import { MODULE_NAME, debugLog } from './module.js';
+import * as VariantRulesHelpers from './helpers/variant-rules-helpers.js';
 
 /**
  * BuildPlanManager - Manages build plans stored in actor flags
@@ -271,15 +272,8 @@ export class BuildPlanManager {
    * @returns {Object} Variant rules object
    */
   static detectVariantRules() {
-    return {
-      freeArchetype: game.settings.get('pf2e', 'freeArchetype') === 'enabled',
-      gradualBoosts: game.settings.get('pf2e', 'gradualBoosts') === 'enabled',
-      ancestryParagon: game.modules.get('xdy-pf2e-workbench')?.active &&
-        game.settings.get('xdy-pf2e-workbench', 'ancestryParagonVariant') === 'enabled',
-      dualClass: game.settings.get('pf2e', 'dualClass') === 'enabled',
-      mythic: game.settings.get('pf2e', 'mythic'),
-      abp: game.settings.get('pf2e', 'automaticBonusVariant')
-    };
+    // Use the helper function from variant-rules-helpers.js
+    return VariantRulesHelpers.detectVariantRules();
   }
 
   /**

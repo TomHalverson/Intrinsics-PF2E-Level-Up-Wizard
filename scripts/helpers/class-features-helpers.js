@@ -1,6 +1,17 @@
 // Class Features Helpers - Class feature detection, ability boosts, and level progression
 import { MODULE_NAME, debugLog } from '../module.js';
 import dataProvider from '../data-provider.js';
+import * as VariantRulesHelpers from './variant-rules-helpers.js';
+
+/**
+ * Get the class slug from a class item, handling null slugs for playtest classes
+ * @param {Object} classItem - The class item
+ * @returns {string|null} The class slug or null if no class item
+ */
+function getClassSlug(classItem) {
+  if (!classItem) return null;
+  return classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+}
 
 /**
  * Get class features for actor at specific level
@@ -15,8 +26,9 @@ export async function getClassFeaturesForLevel(actor, level) {
     return [];
   }
 
-  // Get features from class item
-  const features = classItem.system.items || [];
+  // Get features from class item (system.items is an object, not an array)
+  const featuresObj = classItem.system.items || {};
+  const features = Object.values(featuresObj);
 
   // Filter by level
   const levelFeatures = features.filter(f => {
@@ -26,7 +38,28 @@ export async function getClassFeaturesForLevel(actor, level) {
 
   debugLog('getClassFeaturesForLevel', `Found ${levelFeatures.length} features for level ${level}`);
 
-  return levelFeatures;
+  // Fetch full item data from compendium for each feature
+  const fullFeatures = [];
+  for (const feature of levelFeatures) {
+    if (feature.uuid) {
+      try {
+        const fullItem = await fromUuid(feature.uuid);
+        if (fullItem) {
+          fullFeatures.push(fullItem);
+        } else {
+          debugLog('getClassFeaturesForLevel', `Could not load feature from UUID: ${feature.uuid}`);
+          fullFeatures.push(feature); // Fallback to original
+        }
+      } catch (e) {
+        debugLog('getClassFeaturesForLevel', `Error loading feature ${feature.name}:`, e);
+        fullFeatures.push(feature); // Fallback to original
+      }
+    } else {
+      fullFeatures.push(feature);
+    }
+  }
+
+  return fullFeatures;
 }
 
 /**
@@ -36,7 +69,7 @@ export async function getClassFeaturesForLevel(actor, level) {
  * @returns {Object} Boost info { hasBoosts: boolean, count: number, isPartial: boolean }
  */
 export function detectAbilityBoosts(actor, targetLevel) {
-  const gradualBoosts = game.settings.get('pf2e', 'gradualBoosts') === 'enabled';
+  const gradualBoosts = VariantRulesHelpers.isGradualBoostsEnabled();
 
   if (gradualBoosts) {
     // Gradual boosts: every even level (2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
@@ -72,7 +105,7 @@ export function detectAbilityBoosts(actor, targetLevel) {
  * @returns {Array} Array of partial boost ability keys
  */
 export function detectPartialBoosts(actor, boostsForCurrentSet) {
-  const gradualBoosts = game.settings.get('pf2e', 'gradualBoosts') === 'enabled';
+  const gradualBoosts = VariantRulesHelpers.isGradualBoostsEnabled();
 
   if (!gradualBoosts || !boostsForCurrentSet) {
     return [];
@@ -165,13 +198,14 @@ export function getNewSpellRankAtLevel(actor, targetLevel) {
 
   const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
   const partialCasters = ['magus', 'summoner'];
+  const classSlug = getClassSlug(classItem);
 
-  if (fullCasters.includes(classItem.slug)) {
+  if (fullCasters.includes(classSlug)) {
     // Full casters gain new ranks on odd levels
     if (targetLevel % 2 === 1 && targetLevel >= 1) {
       return Math.min(Math.ceil(targetLevel / 2), 10);
     }
-  } else if (partialCasters.includes(classItem.slug)) {
+  } else if (partialCasters.includes(classSlug)) {
     // Partial casters gain ranks on odd levels starting at 1
     if (targetLevel % 2 === 1 && targetLevel >= 1) {
       return Math.min(Math.floor((targetLevel + 1) / 2), 6);
@@ -210,8 +244,9 @@ export function getSpellSlotsForRank(actor, level, rank) {
   // etc.
 
   const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
+  const classSlug = getClassSlug(classItem);
 
-  if (fullCasters.includes(classItem.slug)) {
+  if (fullCasters.includes(classSlug)) {
     const rankLevel = rank * 2 - 1; // Level when this rank is first gained
 
     if (level < rankLevel) {
@@ -262,26 +297,25 @@ export function getFeatSlotsForLevel(actor, targetLevel) {
   slots.general = generalFeatLevels.includes(targetLevel) ? 1 : 0;
 
   // Free archetype (if variant enabled)
-  if (game.settings.get('pf2e', 'freeArchetype') === 'enabled') {
+  if (VariantRulesHelpers.isFreeArchetypeEnabled()) {
     const archetypeLevels = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
     slots.archetype = archetypeLevels.includes(targetLevel) ? 1 : 0;
   }
 
   // Mythic (if variant enabled)
-  if (game.settings.get('pf2e', 'mythic') === 'enabled') {
+  if (VariantRulesHelpers.isMythicEnabled()) {
     const mythicLevels = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
     slots.mythic = mythicLevels.includes(targetLevel) ? 1 : 0;
   }
 
   // Ancestry Paragon (if variant enabled)
-  if (game.modules.get('xdy-pf2e-workbench')?.active &&
-      game.settings.get('xdy-pf2e-workbench', 'ancestryParagonVariant') === 'enabled') {
+  if (VariantRulesHelpers.isAncestryParagonEnabled()) {
     const paragonLevels = [1, 3, 7, 11, 15, 19];
     slots.ancestryParagon = paragonLevels.includes(targetLevel) ? 1 : 0;
   }
 
   // Dual Class (if variant enabled)
-  if (game.settings.get('pf2e', 'dualClass') === 'enabled') {
+  if (VariantRulesHelpers.isDualClassEnabled()) {
     // Dual class grants second set of class feats
     slots.dualClass = slots.class;
   }
@@ -296,7 +330,7 @@ export function getFeatSlotsForLevel(actor, targetLevel) {
  * @returns {string|null} Boost set key or null
  */
 export function getCurrentBoostSet(actor, targetLevel) {
-  const gradualBoosts = game.settings.get('pf2e', 'gradualBoosts') === 'enabled';
+  const gradualBoosts = VariantRulesHelpers.isGradualBoostsEnabled();
 
   if (!gradualBoosts) {
     // Standard boosts
@@ -351,12 +385,18 @@ export function isSpellcaster(actor) {
     return false;
   }
 
+  // Use slug if available, otherwise normalize the class name (for playtest classes)
+  const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+
   const spellcasterClasses = [
     'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle',
     'witch', 'magus', 'summoner', 'psychic', 'animist', 'necromancer'
   ];
 
-  return spellcasterClasses.includes(classItem.slug);
+  const isSpellcasterResult = spellcasterClasses.includes(classSlug);
+  debugLog('isSpellcaster', `Class: "${classItem.name}", Slug: "${classSlug}", Is Spellcaster: ${isSpellcasterResult}`);
+  
+  return isSpellcasterResult;
 }
 
 /**
@@ -385,4 +425,86 @@ export async function getClassJournal(actor) {
   );
 
   return classJournal || null;
+}
+
+// =============================================================================
+// RUNESMITH CLASS HELPERS
+// =============================================================================
+
+/**
+ * Runesmith progression table
+ * Level -> { runicRepertoire, maxEtchedRunes }
+ */
+const RUNESMITH_PROGRESSION = {
+  1:  { runicRepertoire: 4, maxEtchedRunes: 2 },
+  2:  { runicRepertoire: 4, maxEtchedRunes: 2 },
+  3:  { runicRepertoire: 5, maxEtchedRunes: 2 },
+  4:  { runicRepertoire: 5, maxEtchedRunes: 2 },
+  5:  { runicRepertoire: 6, maxEtchedRunes: 3 },
+  6:  { runicRepertoire: 6, maxEtchedRunes: 3 },
+  7:  { runicRepertoire: 7, maxEtchedRunes: 3 },
+  8:  { runicRepertoire: 7, maxEtchedRunes: 3 },
+  9:  { runicRepertoire: 8, maxEtchedRunes: 4 },
+  10: { runicRepertoire: 8, maxEtchedRunes: 4 },
+  11: { runicRepertoire: 9, maxEtchedRunes: 4 },
+  12: { runicRepertoire: 9, maxEtchedRunes: 4 },
+  13: { runicRepertoire: 10, maxEtchedRunes: 5 },
+  14: { runicRepertoire: 10, maxEtchedRunes: 5 },
+  15: { runicRepertoire: 11, maxEtchedRunes: 5 },
+  16: { runicRepertoire: 11, maxEtchedRunes: 5 },
+  17: { runicRepertoire: 12, maxEtchedRunes: 6 },
+  18: { runicRepertoire: 12, maxEtchedRunes: 6 },
+  19: { runicRepertoire: 13, maxEtchedRunes: 6 },
+  20: { runicRepertoire: 13, maxEtchedRunes: 6 }
+};
+
+/**
+ * Check if actor is a Runesmith
+ * @param {Actor} actor - The actor
+ * @returns {boolean} True if Runesmith
+ */
+export function isRunesmith(actor) {
+  const classItem = actor.items.find(i => i.type === 'class');
+  if (!classItem) return false;
+  
+  const slug = getClassSlug(classItem);
+  return slug === 'runesmith';
+}
+
+/**
+ * Get Runesmith progression info for a specific level
+ * @param {number} level - The target level
+ * @returns {Object} { runicRepertoire, maxEtchedRunes }
+ */
+export function getRunesmithProgression(level) {
+  return RUNESMITH_PROGRESSION[level] || { runicRepertoire: 0, maxEtchedRunes: 0 };
+}
+
+/**
+ * Get Runesmith changes at a specific level (what increased from previous level)
+ * @param {number} targetLevel - The target level
+ * @returns {Object|null} { runicRepertoireIncrease, maxEtchedRunesIncrease, current } or null if no changes
+ */
+export function getRunesmithChangesAtLevel(targetLevel) {
+  if (targetLevel < 1 || targetLevel > 20) return null;
+  
+  const current = RUNESMITH_PROGRESSION[targetLevel];
+  const previous = targetLevel > 1 ? RUNESMITH_PROGRESSION[targetLevel - 1] : { runicRepertoire: 0, maxEtchedRunes: 0 };
+  
+  const runicRepertoireIncrease = current.runicRepertoire - previous.runicRepertoire;
+  const maxEtchedRunesIncrease = current.maxEtchedRunes - previous.maxEtchedRunes;
+  
+  // Only return if there are changes
+  if (runicRepertoireIncrease === 0 && maxEtchedRunesIncrease === 0) {
+    return null;
+  }
+  
+  return {
+    runicRepertoireIncrease,
+    maxEtchedRunesIncrease,
+    current: {
+      runicRepertoire: current.runicRepertoire,
+      maxEtchedRunes: current.maxEtchedRunes
+    }
+  };
 }

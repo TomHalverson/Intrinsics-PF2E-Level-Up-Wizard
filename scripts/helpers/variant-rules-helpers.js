@@ -22,7 +22,11 @@ export function detectVariantRules() {
  */
 export function isFreeArchetypeEnabled() {
   try {
-    return game.settings.get('pf2e', 'freeArchetype') === 'enabled';
+    const settings = game.settings.settings;
+    if (settings.has('pf2e.freeArchetypeVariant')) {
+      return game.settings.get('pf2e', 'freeArchetypeVariant') === true;
+    }
+    return false;
   } catch (error) {
     debugLog('isFreeArchetypeEnabled', 'Error checking setting', error);
     return false;
@@ -35,7 +39,11 @@ export function isFreeArchetypeEnabled() {
  */
 export function isGradualBoostsEnabled() {
   try {
-    return game.settings.get('pf2e', 'gradualBoosts') === 'enabled';
+    const settings = game.settings.settings;
+    if (settings.has('pf2e.gradualBoostsVariant')) {
+      return game.settings.get('pf2e', 'gradualBoostsVariant') === true;
+    }
+    return false;
   } catch (error) {
     debugLog('isGradualBoostsEnabled', 'Error checking setting', error);
     return false;
@@ -67,7 +75,13 @@ export function isAncestryParagonEnabled() {
  */
 export function isDualClassEnabled() {
   try {
-    return game.settings.get('pf2e', 'dualClass') === 'enabled';
+    // Dual class might be from workbench or a future PF2e variant
+    // Check if the setting exists first
+    const settings = game.settings.settings;
+    if (settings.has('pf2e.dualClass')) {
+      return game.settings.get('pf2e', 'dualClass') === true;
+    }
+    return false;
   } catch (error) {
     debugLog('isDualClassEnabled', 'Error checking setting', error);
     return false;
@@ -80,7 +94,11 @@ export function isDualClassEnabled() {
  */
 export function getMythicSetting() {
   try {
-    return game.settings.get('pf2e', 'mythic');
+    const settings = game.settings.settings;
+    if (settings.has('pf2e.mythic')) {
+      return game.settings.get('pf2e', 'mythic');
+    }
+    return 'disabled';
   } catch (error) {
     debugLog('getMythicSetting', 'Error checking setting', error);
     return 'disabled';
@@ -101,7 +119,11 @@ export function isMythicEnabled() {
  */
 export function getABPSetting() {
   try {
-    return game.settings.get('pf2e', 'automaticBonusVariant');
+    const settings = game.settings.settings;
+    if (settings.has('pf2e.automaticBonusVariant')) {
+      return game.settings.get('pf2e', 'automaticBonusVariant');
+    }
+    return 'noABP';
   } catch (error) {
     debugLog('getABPSetting', 'Error checking setting', error);
     return 'noABP';

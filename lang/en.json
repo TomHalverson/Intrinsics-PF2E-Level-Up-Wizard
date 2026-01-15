@@ -100,7 +100,8 @@
       "duration": "Duration",
       "tradition": "Tradition",
       "school": "School",
-      "rarity": "Rarity"
+      "rarity": "Rarity",
+      "spells-selected": "spells selected"
     },
 
     "messages": {
@@ -151,7 +152,8 @@
         "select-feat": "Select a feat to view details",
         "select-spell": "Select a spell to view details",
         "feat-count": "{count} feats available",
-        "spell-count": "{count} spells available"
+        "spell-count": "{count} spells available",
+        "selected-count": "Selected"
       }
     },
 
@@ -195,7 +197,10 @@
       "sort-level-asc": "Level (Low to High)",
       "sort-alphabetical": "Alphabetical",
       "school": "School",
-      "tradition": "Tradition"
+      "all-schools": "All Schools",
+      "tradition": "Tradition",
+      "kineticist-gate-filter": "Highlight Gates",
+      "kineticist-gates-info": "Your Gates"
     },
 
     "status": {

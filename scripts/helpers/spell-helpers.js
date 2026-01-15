@@ -3,6 +3,17 @@ import { MODULE_NAME, debugLog } from '../module.js';
 import dataProvider from '../data-provider.js';
 
 /**
+ * Get normalized class slug from class item
+ * Handles playtest classes that may have null slugs
+ * @param {Item} classItem - The class item
+ * @returns {string|null} Normalized class slug
+ */
+function getClassSlug(classItem) {
+  if (!classItem) return null;
+  return classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+}
+
+/**
  * Get spells available for actor at specific rank
  * @param {Actor} actor - The actor
  * @param {number} rank - Spell rank (0 = cantrips, 1-10 = spell levels)
@@ -39,6 +50,15 @@ export async function getSpellsForRank(actor, rank, options = {}) {
  * @returns {string|null} Tradition name (arcane, divine, occult, primal) or null
  */
 export function getSpellTradition(actor) {
+  // First, try to get tradition from the class spellcasting entry (most accurate)
+  const classSpellcastingEntry = getClassSpellcastingEntry(actor);
+  
+  if (classSpellcastingEntry && classSpellcastingEntry.system?.tradition?.value) {
+    debugLog('getSpellTradition', `Found tradition from class spellcasting entry "${classSpellcastingEntry.name}": ${classSpellcastingEntry.system.tradition.value}`);
+    return classSpellcastingEntry.system.tradition.value;
+  }
+
+  // Fallback: Try to determine from class
   const classItem = actor.items.find(i => i.type === 'class');
   if (!classItem) return null;
 
@@ -57,7 +77,80 @@ export function getSpellTradition(actor) {
     'necromancer': 'occult'
   };
 
-  return traditions[classItem.slug] || null;
+  const tradition = traditions[getClassSlug(classItem)] || null;
+  debugLog('getSpellTradition', `Fallback to class-based tradition for ${getClassSlug(classItem)}: ${tradition}`);
+  return tradition;
+}
+
+/**
+ * Get the primary class spellcasting entry for an actor
+ * Uses multiple matching strategies to find the correct entry
+ * @param {Actor} actor - The actor
+ * @returns {Item|null} The spellcasting entry item, or null if not found
+ */
+export function getClassSpellcastingEntry(actor) {
+  const classItem = actor.items.find(i => i.type === 'class');
+  const className = classItem?.name || '';
+  const classNameLower = className.toLowerCase();
+  
+  // Step 1: Try to match "{ClassName} Spellcasting" (e.g., "Wizard Spellcasting")
+  let entry = actor.items.find(i => 
+    i.type === 'spellcastingEntry' && 
+    i.name.toLowerCase().includes(`${classNameLower} spellcasting`)
+  );
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 1 - Found "${entry.name}" matching "${classNameLower} spellcasting"`);
+    return entry;
+  }
+  
+  // Step 2: Try to match "{ClassName} Spells" (e.g., "Necromancer Spells")
+  entry = actor.items.find(i => 
+    i.type === 'spellcastingEntry' && 
+    i.name.toLowerCase().includes(`${classNameLower} spells`)
+  );
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 2 - Found "${entry.name}" matching "${classNameLower} spells"`);
+    return entry;
+  }
+  
+  // Step 3: Try to match entry name starting with class name (but not focus/other special entries)
+  entry = actor.items.find(i => 
+    i.type === 'spellcastingEntry' && 
+    i.name.toLowerCase().startsWith(classNameLower) &&
+    !i.name.toLowerCase().includes('focus')
+  );
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 3 - Found "${entry.name}" starting with "${classNameLower}"`);
+    return entry;
+  }
+  
+  // Step 4: Fallback to any spellcasting entry with category 'class' (prepared/spontaneous casters)
+  entry = actor.items.find(i => 
+    i.type === 'spellcastingEntry' && 
+    i.system?.category === 'class'
+  );
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 4 - Found "${entry.name}" with category='class'`);
+    return entry;
+  }
+  
+  // Step 5: Prefer entries that contain "Spells" or "Spellcasting" in the name, excluding focus entries
+  entry = actor.items.find(i => 
+    i.type === 'spellcastingEntry' && 
+    !i.name.toLowerCase().includes('focus') &&
+    (i.name.toLowerCase().includes('spells') || i.name.toLowerCase().includes('spellcasting'))
+  );
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 5 - Found non-focus entry "${entry.name}"`);
+    return entry;
+  }
+  
+  // Step 6: Absolute fallback to any spellcasting entry
+  entry = actor.items.find(i => i.type === 'spellcastingEntry');
+  if (entry) {
+    debugLog('getClassSpellcastingEntry', `Step 6 - Fallback to first entry "${entry.name}"`);
+  }
+  return entry;
 }
 
 /**
@@ -146,7 +239,7 @@ export function getSpellcastingType(actor) {
     'necromancer': 'prepared'
   };
 
-  return types[classItem.slug] || 'prepared';
+  return types[getClassSlug(classItem)] || 'prepared';
 }
 
 /**
@@ -158,8 +251,9 @@ export function autoLearnsCommonSpells(actor) {
   const classItem = actor.items.find(i => i.type === 'class');
   if (!classItem) return false;
 
+  // Cleric, Druid, and Animist auto-learn all common spells from their tradition
   const autoLearnClasses = ['cleric', 'druid', 'animist'];
-  return autoLearnClasses.includes(classItem.slug);
+  return autoLearnClasses.includes(getClassSlug(classItem));
 }
 
 /**
@@ -186,7 +280,7 @@ export function getCantripCount(actor) {
     'necromancer': 5
   };
 
-  return cantripCounts[classItem.slug] || 5;
+  return cantripCounts[getClassSlug(classItem)] || 5;
 }
 
 /**
@@ -215,7 +309,7 @@ export function getRank1SpellCount(actor) {
     'necromancer': 4
   };
 
-  return spellCounts[classItem.slug] || 2;
+  return spellCounts[getClassSlug(classItem)] || 2;
 }
 
 /**
@@ -417,24 +511,26 @@ export function formatSpellSummary(spell) {
 /**
  * Get highest spell rank actor has access to
  * @param {Actor} actor - The actor
+ * @param {number} level - Optional level to check (defaults to actor's current level)
  * @returns {number} Highest rank (0-10)
  */
-export function getHighestSpellRank(actor) {
-  const level = actor.system.details.level.value;
+export function getHighestSpellRank(actor, level = null) {
+  const checkLevel = level ?? actor.system.details.level.value;
   const classItem = actor.items.find(i => i.type === 'class');
 
   if (!classItem) return 0;
 
   // Full casters get new spell ranks every odd level
   const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch'];
+  const classSlug = getClassSlug(classItem);
 
-  if (fullCasters.includes(classItem.slug)) {
-    return Math.min(Math.ceil(level / 2), 10);
+  if (fullCasters.includes(classSlug)) {
+    return Math.min(Math.ceil(checkLevel / 2), 10);
   }
 
   // Partial casters (magus, summoner) get new spell ranks slower
   // Level 1: rank 1, Level 3: rank 2, Level 5: rank 3, etc.
-  return Math.min(Math.floor((level + 1) / 2), 10);
+  return Math.min(Math.floor((checkLevel + 1) / 2), 10);
 }
 
 /**
@@ -449,13 +545,14 @@ export function getNewSpellRankAtLevel(actor, level) {
 
   const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
   const partialCasters = ['magus', 'summoner'];
+  const classSlug = getClassSlug(classItem);
 
-  if (fullCasters.includes(classItem.slug)) {
+  if (fullCasters.includes(classSlug)) {
     // Full casters gain new ranks on odd levels
     if (level % 2 === 1 && level > 1) {
       return Math.min(Math.ceil(level / 2), 10);
     }
-  } else if (partialCasters.includes(classItem.slug)) {
+  } else if (partialCasters.includes(classSlug)) {
     // Partial casters gain new ranks on odd levels starting at 3
     if (level % 2 === 1 && level >= 3) {
       return Math.min(Math.floor((level + 1) / 2), 6); // Max rank 6 for partial casters

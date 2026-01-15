@@ -47,8 +47,9 @@ export class DataProvider {
     // Filter by traits
     if (filters.traits && filters.traits.length > 0) {
       filtered = filtered.filter(feat => {
-        const featTraits = feat.system.traits.value.map(t => t.toLowerCase());
-        return filters.traits.some(t => featTraits.includes(t.toLowerCase()));
+        const traitValues = feat.system.traits?.value || [];
+        const featTraits = traitValues.filter(t => t != null).map(t => t.toLowerCase());
+        return filters.traits.some(t => t && featTraits.includes(t.toLowerCase()));
       });
     }
 
@@ -95,6 +96,19 @@ export class DataProvider {
         debugLog('DataProvider', 'Loading feats from pf2e.feats-srd...');
         const defaultFeats = await defaultCompendium.getDocuments();
         allFeats = allFeats.concat(defaultFeats.filter(f => f.type === 'feat'));
+      }
+
+      // Load playtest class feats
+      const playtestCompendium = game.packs.get('pf2e-playtest-data.impossible-playtest-class-feats');
+      if (playtestCompendium) {
+        debugLog('DataProvider', 'Loading feats from pf2e-playtest-data.impossible-playtest-class-feats...');
+        try {
+          const playtestFeats = await playtestCompendium.getDocuments();
+          allFeats = allFeats.concat(playtestFeats.filter(f => f.type === 'feat'));
+          debugLog('DataProvider', `Loaded ${playtestFeats.filter(f => f.type === 'feat').length} playtest feats`);
+        } catch (err) {
+          console.warn('DataProvider | Failed to load playtest feats:', err);
+        }
       }
 
       // Load from additional compendiums

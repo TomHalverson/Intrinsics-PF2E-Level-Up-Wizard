@@ -10,61 +10,69 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.feat-selector-app .feat-selector-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ========================================================================== */
 /* SELECTOR HEADER */
 /* ========================================================================== */
 
-.selector-header {
+.feat-selector-app .selector-header {
   padding: 16px;
   background: var(--iluw-bg-secondary);
   border-bottom: 2px solid var(--iluw-border-color);
 }
 
-.selector-title {
+.feat-selector-app .selector-title {
   font-size: 20px;
   color: var(--iluw-text-primary);
   font-weight: bold;
   margin: 0 0 12px 0;
 }
 
-.selector-filters {
+.feat-selector-app .selector-filters {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.filter-group {
+.feat-selector-app .filter-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.filter-label {
+.feat-selector-app .filter-label {
   font-size: 13px;
   color: var(--iluw-text-secondary);
   font-weight: 600;
 }
 
-.filter-select {
+.feat-selector-app .filter-select {
   min-width: 120px;
 }
 
-.filter-checkbox {
+.feat-selector-app .filter-checkbox {
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
 }
 
-.filter-checkbox input[type="checkbox"] {
+.feat-selector-app .filter-checkbox input[type="checkbox"] {
   width: auto;
   cursor: pointer;
 }
 
-.filter-checkbox label {
+.feat-selector-app .filter-checkbox label {
   font-size: 13px;
   color: var(--iluw-text-secondary);
   cursor: pointer;
@@ -72,10 +80,142 @@
 }
 
 /* ========================================================================== */
+/* ARCHETYPE SEARCH FILTER */
+/* ========================================================================== */
+
+.feat-selector-app .archetype-search-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(155, 89, 182, 0.1);
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  border-radius: 6px;
+}
+
+.feat-selector-app .archetype-search-group .filter-label {
+  color: var(--iluw-accent-purple);
+  white-space: nowrap;
+}
+
+.feat-selector-app .archetype-search-group .filter-label i {
+  margin-right: 4px;
+}
+
+.feat-selector-app .archetype-search {
+  width: 180px;
+  padding: 6px 10px;
+  background: var(--iluw-bg-primary);
+  border: 1px solid var(--iluw-border-color);
+  border-radius: 4px;
+  color: var(--iluw-text-primary);
+  font-size: 13px;
+}
+
+.feat-selector-app .archetype-search:focus {
+  outline: none;
+  border-color: var(--iluw-accent-purple);
+  box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.2);
+}
+
+.feat-selector-app .archetype-search::placeholder {
+  color: var(--iluw-text-muted);
+}
+
+/* ========================================================================== *//* SKILL FILTER */
+/* ========================================================================== */
+
+.feat-selector-app .skill-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(52, 152, 219, 0.1);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  border-radius: 6px;
+}
+
+.feat-selector-app .skill-filter-group .filter-label {
+  color: var(--iluw-accent-primary);
+  white-space: nowrap;
+}
+
+.feat-selector-app .skill-filter-group .filter-label i {
+  margin-right: 4px;
+}
+
+.feat-selector-app .skill-filter-group .filter-select {
+  min-width: 140px;
+  padding: 6px 10px;
+  background: var(--iluw-bg-primary);
+  border: 1px solid var(--iluw-border-color);
+  border-radius: 4px;
+  color: var(--iluw-text-primary);
+  font-size: 13px;
+}
+
+.feat-selector-app .skill-filter-group .filter-select:focus {
+  outline: none;
+  border-color: var(--iluw-accent-primary);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* ========================================================================== *//* KINETICIST GATE FILTER */
+/* ========================================================================== */
+
+.feat-selector-app .kineticist-gate-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 12px;
+  background: rgba(255, 140, 0, 0.1);
+  border: 1px solid rgba(255, 140, 0, 0.3);
+  border-radius: 6px;
+}
+
+.feat-selector-app .kineticist-gate-filter .filter-checkbox label {
+  color: #ffa500;
+}
+
+.feat-selector-app .kineticist-gate-filter .filter-checkbox label i {
+  margin-right: 4px;
+}
+
+.feat-selector-app .gate-info {
+  font-size: 11px;
+  color: var(--iluw-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--iluw-bg-primary);
+  border-radius: 4px;
+}
+
+.feat-selector-app .gate-info i {
+  color: var(--iluw-accent-blue);
+}
+
+/* Gate Status on Trait Badges */
+.feat-selector-app .trait-badge.has-gate {
+  background: rgba(16, 185, 129, 0.3) !important;
+  border-color: var(--iluw-accent-green) !important;
+  color: #4ade80 !important;
+  font-weight: 600;
+}
+
+.feat-selector-app .trait-badge.missing-gate {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border-color: var(--iluw-accent-red) !important;
+  color: #f87171 !important;
+  font-weight: 600;
+}
+
+/* ========================================================================== */
 /* TWO-COLUMN LAYOUT */
 /* ========================================================================== */
 
-.selector-content {
+.feat-selector-app .selector-content {
   flex: 1;
   display: flex;
   gap: 16px;
@@ -83,14 +223,14 @@
   overflow: hidden;
 }
 
-.feat-list-column {
+.feat-selector-app .feat-list-column {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.feat-preview-column {
+.feat-selector-app .feat-preview-column {
   width: 400px;
   min-width: 400px;
   display: flex;
@@ -102,13 +242,13 @@
 /* FEAT LIST */
 /* ========================================================================== */
 
-.feat-list-container {
+.feat-selector-app .feat-list-container {
   flex: 1;
   overflow-y: auto;
   padding-right: 8px;
 }
 
-.feat-list-info {
+.feat-selector-app .feat-list-info {
   padding: 8px 12px;
   background: var(--iluw-bg-secondary);
   border-radius: 6px;
@@ -120,12 +260,12 @@
   justify-content: space-between;
 }
 
-.feat-count {
+.feat-selector-app .feat-count {
   font-weight: 600;
   color: var(--iluw-text-primary);
 }
 
-.feat-card {
+.feat-selector-app .feat-card {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -135,31 +275,31 @@
   transition: all 0.2s ease;
 }
 
-.feat-card:hover {
+.feat-selector-app .feat-card:hover {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
   transform: translateX(4px);
 }
 
-.feat-card.selected {
+.feat-selector-app .feat-card.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.1);
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
 }
 
-.feat-card.active {
+.feat-selector-app .feat-card.active {
   border-color: var(--iluw-accent-purple);
   background: rgba(155, 89, 182, 0.1);
 }
 
-.feat-card-header {
+.feat-selector-app .feat-card-header {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 8px;
 }
 
-.feat-card-icon {
+.feat-selector-app .feat-card-icon {
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -168,12 +308,12 @@
   flex-shrink: 0;
 }
 
-.feat-card-info {
+.feat-selector-app .feat-card-info {
   flex: 1;
   min-width: 0;
 }
 
-.feat-card-title {
+.feat-selector-app .feat-card-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--iluw-text-primary);
@@ -183,26 +323,26 @@
   gap: 8px;
 }
 
-.feat-card-level {
+.feat-selector-app .feat-card-level {
   font-size: 12px;
   color: var(--iluw-text-muted);
   font-weight: normal;
 }
 
-.feat-card-type {
+.feat-selector-app .feat-card-type {
   font-size: 13px;
   color: var(--iluw-accent-purple);
   font-weight: 500;
 }
 
-.feat-card-traits {
+.feat-selector-app .feat-card-traits {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 8px;
 }
 
-.feat-card-description {
+.feat-selector-app .feat-card-description {
   font-size: 13px;
   color: var(--iluw-text-secondary);
   line-height: 1.5;
@@ -213,7 +353,7 @@
   overflow: hidden;
 }
 
-.feat-card-prerequisites {
+.feat-selector-app .feat-card-prerequisites {
   font-size: 12px;
   color: var(--iluw-text-muted);
   display: flex;
@@ -222,18 +362,54 @@
   padding: 6px 10px;
   background: var(--iluw-bg-primary);
   border-radius: 4px;
+  border: 1px solid transparent;
 }
 
-.feat-card-prerequisites i {
+.feat-selector-app .feat-card-prerequisites i {
   color: var(--iluw-accent-blue);
 }
 
-.feat-card-prerequisites.unmet {
-  color: var(--iluw-accent-red);
-  border: 1px solid var(--iluw-accent-red);
+/* Prerequisites Met - Green */
+.feat-selector-app .feat-card-prerequisites.prereq-met {
+  color: #4ade80;
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
 }
 
-.feat-card-prerequisites.unmet i {
+.feat-selector-app .feat-card-prerequisites.prereq-met i {
+  color: #4ade80;
+}
+
+/* Prerequisites Not Met - Red */
+.feat-selector-app .feat-card-prerequisites.prereq-unmet {
+  color: var(--iluw-accent-red);
+  border-color: var(--iluw-accent-red);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.feat-selector-app .feat-card-prerequisites.prereq-unmet i {
+  color: var(--iluw-accent-red);
+}
+
+/* Prerequisites Unknown - Grey */
+.feat-selector-app .feat-card-prerequisites.prereq-unknown {
+  color: var(--iluw-text-muted);
+  border-color: var(--iluw-border-color);
+  background: var(--iluw-bg-primary);
+}
+
+.feat-selector-app .feat-card-prerequisites.prereq-unknown i {
+  color: var(--iluw-text-muted);
+}
+
+/* Legacy unmet class for "needs dedication" warnings */
+.feat-selector-app .feat-card-prerequisites.unmet {
+  color: var(--iluw-accent-red);
+  border-color: var(--iluw-accent-red);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.feat-selector-app .feat-card-prerequisites.unmet i {
   color: var(--iluw-accent-red);
 }
 
@@ -241,7 +417,7 @@
 /* FEAT PREVIEW PANEL */
 /* ========================================================================== */
 
-.feat-preview-panel {
+.feat-selector-app .feat-preview-panel {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -250,7 +426,7 @@
   height: 100%;
 }
 
-.feat-preview-placeholder {
+.feat-selector-app .feat-preview-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -261,16 +437,16 @@
   gap: 12px;
 }
 
-.feat-preview-placeholder i {
+.feat-selector-app .feat-preview-placeholder i {
   font-size: 64px;
   opacity: 0.3;
 }
 
-.feat-preview-header {
+.feat-selector-app .feat-preview-header {
   margin-bottom: 16px;
 }
 
-.feat-preview-image {
+.feat-selector-app .feat-preview-image {
   width: 100%;
   height: 200px;
   object-fit: cover;
@@ -279,14 +455,14 @@
   border: 2px solid var(--iluw-border-color);
 }
 
-.feat-preview-title {
+.feat-selector-app .feat-preview-title {
   font-size: 22px;
   font-weight: bold;
   color: var(--iluw-text-primary);
   margin: 0 0 8px 0;
 }
 
-.feat-preview-meta {
+.feat-selector-app .feat-preview-meta {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
@@ -295,18 +471,18 @@
   margin-bottom: 12px;
 }
 
-.feat-preview-traits {
+.feat-selector-app .feat-preview-traits {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 16px;
 }
 
-.feat-preview-section {
+.feat-selector-app .feat-preview-section {
   margin-bottom: 16px;
 }
 
-.feat-preview-section-title {
+.feat-selector-app .feat-preview-section-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--iluw-accent-purple);
@@ -315,13 +491,13 @@
   letter-spacing: 0.5px;
 }
 
-.feat-preview-description {
+.feat-selector-app .feat-preview-description {
   font-size: 14px;
   color: var(--iluw-text-secondary);
   line-height: 1.6;
 }
 
-.feat-preview-prerequisites {
+.feat-selector-app .feat-preview-prerequisites {
   background: rgba(96, 165, 250, 0.1);
   border: 1px solid var(--iluw-accent-blue);
   border-radius: 6px;
@@ -330,26 +506,26 @@
   font-size: 13px;
 }
 
-.feat-preview-prerequisites.unmet {
+.feat-selector-app .feat-preview-prerequisites.unmet {
   background: rgba(239, 68, 68, 0.1);
   border-color: var(--iluw-accent-red);
   color: var(--iluw-text-secondary);
 }
 
-.feat-preview-prerequisites ul {
+.feat-selector-app .feat-preview-prerequisites ul {
   margin: 8px 0 0 0;
   padding-left: 20px;
 }
 
-.feat-preview-prerequisites li {
+.feat-selector-app .feat-preview-prerequisites li {
   margin-bottom: 4px;
 }
 
-.feat-preview-prerequisites li.met {
+.feat-selector-app .feat-preview-prerequisites li.met {
   color: var(--iluw-accent-green);
 }
 
-.feat-preview-prerequisites li.unmet {
+.feat-selector-app .feat-preview-prerequisites li.unmet {
   color: var(--iluw-accent-red);
 }
 
@@ -357,13 +533,13 @@
 /* COMPARISON VIEW */
 /* ========================================================================== */
 
-.comparison-mode {
+.feat-selector-app .comparison-mode {
   display: flex;
   gap: 16px;
   height: 100%;
 }
 
-.comparison-column {
+.feat-selector-app .comparison-column {
   flex: 1;
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
@@ -372,7 +548,7 @@
   overflow-y: auto;
 }
 
-.comparison-header {
+.feat-selector-app .comparison-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -381,7 +557,7 @@
   border-bottom: 2px solid var(--iluw-border-color);
 }
 
-.comparison-number {
+.feat-selector-app .comparison-number {
   width: 32px;
   height: 32px;
   background: var(--iluw-purple-gradient);
@@ -394,13 +570,13 @@
   font-size: 16px;
 }
 
-.comparison-close {
+.feat-selector-app .comparison-close {
   cursor: pointer;
   color: var(--iluw-text-muted);
   transition: color 0.2s ease;
 }
 
-.comparison-close:hover {
+.feat-selector-app .comparison-close:hover {
   color: var(--iluw-accent-red);
 }
 
@@ -408,7 +584,7 @@
 /* SELECTOR FOOTER */
 /* ========================================================================== */
 
-.selector-footer {
+.feat-selector-app .selector-footer {
   padding: 16px;
   background: var(--iluw-bg-secondary);
   border-top: 2px solid var(--iluw-border-color);
@@ -417,17 +593,17 @@
   justify-content: space-between;
 }
 
-.selector-actions-left {
+.feat-selector-app .selector-actions-left {
   display: flex;
   gap: 8px;
 }
 
-.selector-actions-right {
+.feat-selector-app .selector-actions-right {
   display: flex;
   gap: 12px;
 }
 
-.compare-toggle {
+.feat-selector-app .compare-toggle {
   padding: 8px 16px;
   background: var(--iluw-bg-primary);
   border: 2px solid var(--iluw-accent-purple);
@@ -439,11 +615,11 @@
   transition: all 0.2s ease;
 }
 
-.compare-toggle:hover {
+.feat-selector-app .compare-toggle:hover {
   background: rgba(155, 89, 182, 0.1);
 }
 
-.compare-toggle.active {
+.feat-selector-app .compare-toggle.active {
   background: var(--iluw-purple-gradient);
   color: white;
 }
@@ -452,11 +628,11 @@
 /* ARCHETYPE SECTION */
 /* ========================================================================== */
 
-.archetype-section {
+.feat-selector-app .archetype-section {
   margin-bottom: 20px;
 }
 
-.archetype-header {
+.feat-selector-app .archetype-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -467,23 +643,23 @@
   margin-bottom: 12px;
 }
 
-.archetype-name {
+.feat-selector-app .archetype-name {
   font-size: 16px;
   font-weight: 600;
   color: var(--iluw-accent-purple);
   flex: 1;
 }
 
-.archetype-dedication {
+.feat-selector-app .archetype-dedication {
   font-size: 12px;
   color: var(--iluw-text-muted);
 }
 
-.archetype-dedication.has-dedication {
+.feat-selector-app .archetype-dedication.has-dedication {
   color: var(--iluw-accent-green);
 }
 
-.archetype-dedication.no-dedication {
+.feat-selector-app .archetype-dedication.no-dedication {
   color: var(--iluw-accent-red);
 }
 
@@ -491,7 +667,7 @@
 /* EMPTY STATE */
 /* ========================================================================== */
 
-.feat-list-empty {
+.feat-selector-app .feat-list-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -501,13 +677,48 @@
   text-align: center;
 }
 
-.feat-list-empty i {
+.feat-selector-app .feat-list-empty i {
   font-size: 64px;
   opacity: 0.3;
   margin-bottom: 16px;
 }
 
-.feat-list-empty p {
+.feat-selector-app .feat-list-empty p {
   font-size: 16px;
   margin: 0;
+}
+
+/* ========================================================================== */
+/* RARITY BADGES */
+/* ========================================================================== */
+
+.feat-selector-app .rarity-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.feat-selector-app .rarity-common {
+  background: #646464;
+  color: #fff;
+}
+
+.feat-selector-app .rarity-uncommon {
+  background: #c45500;
+  color: #fff;
+}
+
+.feat-selector-app .rarity-rare {
+  background: #0c1466;
+  color: #fff;
+}
+
+.feat-selector-app .rarity-unique {
+  background: #800080;
+  color: #fff;
 }

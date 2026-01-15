@@ -275,22 +275,28 @@ export function checkPrerequisites(actor, feat) {
   const prereqs = feat.system.prerequisites?.value || [];
 
   if (prereqs.length === 0) {
-    return { meets: true, missing: [] };
+    return { meets: true, missing: [], unknown: [] };
   }
 
   const missing = [];
+  const unknown = [];
 
   // This is a simplified check - full prerequisite checking would require
   // parsing the prerequisite text and checking against actor's abilities,
   // skills, feats, etc.
-  // For now, just return that prerequisites exist
 
   for (const prereq of prereqs) {
     // Check common prerequisite types
-    const prereqText = prereq.value.toLowerCase();
+    const prereqText = prereq.value?.toLowerCase() || '';
+
+    // If prereq is empty or can't be parsed, mark as unknown
+    if (!prereqText) {
+      unknown.push(prereq.value || 'Unknown prerequisite');
+      continue;
+    }
 
     // Check for ability score requirements (e.g., "Strength 14")
-    const abilityMatch = prereqText.match(/(\w+)\s+(\d+)/);
+    const abilityMatch = prereqText.match(/(strength|dexterity|constitution|intelligence|wisdom|charisma)\s+(\d+)/);
     if (abilityMatch) {
       const [_, ability, value] = abilityMatch;
       const abilityKey = ability.substring(0, 3); // str, dex, con, etc.
@@ -299,32 +305,96 @@ export function checkPrerequisites(actor, feat) {
       if (actorValue < parseInt(value)) {
         missing.push(prereq.value);
       }
+      continue; // Handled this prerequisite
     }
 
-    // Check for feat requirements
-    if (prereqText.includes('feat') || prereqText.includes('dedication')) {
-      // Check if actor has the required feat
-      const hasFeat = actor.items.some(i =>
-        i.type === 'feat' &&
-        prereqText.includes(i.name.toLowerCase())
-      );
+    // Check for feat requirements (specific feat names)
+    // Prerequisites often mention the feat name directly or with "feat" suffix
+    // Examples: "Power Attack", "Cavalier Dedication", "Shield Block feat"
 
-      if (!hasFeat) {
-        missing.push(prereq.value);
+    // Get all actor's feat names in lowercase for comparison
+    const actorFeatNames = actor.items
+      .filter(i => i.type === 'feat')
+      .map(i => i.name.toLowerCase());
+
+    // Check if any actor feat name appears in the prerequisite text
+    // Also handle cases where the prerequisite is just the feat name
+    const hasFeat = actorFeatNames.some(featName => {
+      // Check if the prerequisite contains this feat name
+      // Use word boundaries to avoid partial matches (e.g., "Shield" shouldn't match "Shield Block")
+      const regex = new RegExp('\\b' + featName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+      return regex.test(prereqText);
+    });
+
+    if (!hasFeat && (prereqText.includes('feat') || prereqText.includes('dedication') || prereqText.includes('archetype'))) {
+      // Only mark as missing if we're confident this is a feat prerequisite
+      missing.push(prereq.value);
+      continue; // Handled this prerequisite
+    } else if (hasFeat) {
+      // Found the feat
+      continue; // Handled this prerequisite
+    }
+    // If we couldn't determine if this is a feat prerequisite, fall through to unknown
+
+    // Check for proficiency requirements
+    if (prereqText.includes('trained') || prereqText.includes('expert') || prereqText.includes('master') || prereqText.includes('legendary')) {
+      // Try to extract skill name and rank requirement
+      const skills = ['acrobatics', 'arcana', 'athletics', 'crafting', 'deception', 'diplomacy',
+                      'intimidation', 'lore', 'medicine', 'nature', 'occultism', 'performance',
+                      'religion', 'society', 'stealth', 'survival', 'thievery'];
+
+      let foundSkill = false;
+      for (const skillName of skills) {
+        if (prereqText.includes(skillName)) {
+          const skillData = actor.system.skills?.[skillName];
+          if (skillData) {
+            const rank = skillData.rank || 0;
+            const rankNames = ['untrained', 'trained', 'expert', 'master', 'legendary'];
+            const requiredRank = rankNames.findIndex(r => prereqText.includes(r));
+
+            if (requiredRank !== -1 && rank < requiredRank) {
+              missing.push(prereq.value);
+            }
+            foundSkill = true;
+            break;
+          }
+        }
+      }
+
+      if (foundSkill) {
+        continue; // Handled this prerequisite
       }
     }
 
-    // Check for proficiency requirements
-    if (prereqText.includes('trained') || prereqText.includes('expert') || prereqText.includes('master')) {
-      // This would require checking skill proficiencies
-      // For now, mark as potentially missing
-      // missing.push(prereq.value);
+    // Check for class/ancestry requirements
+    if (prereqText.includes('class') || prereqText.includes('ancestry') || prereqText.includes('heritage')) {
+      // These are usually structural and difficult to validate programmatically
+      // Mark as unknown for now
+      unknown.push(prereq.value);
+      continue;
     }
+
+    // If we couldn't determine how to check this prerequisite, mark as unknown
+    unknown.push(prereq.value);
+  }
+
+  // Determine final state:
+  // - If any prerequisites are unknown, return null (can't determine)
+  // - If all prerequisites are checked and some are missing, return false
+  // - If all prerequisites are checked and none are missing, return true
+  let meetsStatus;
+  if (unknown.length > 0) {
+    meetsStatus = null; // Can't determine
+  } else if (missing.length > 0) {
+    meetsStatus = false; // Definitely not met
+  } else {
+    meetsStatus = true; // All met
   }
 
   return {
-    meets: missing.length === 0,
-    missing
+    meets: meetsStatus,
+    missing,
+    unknown
   };
 }
 

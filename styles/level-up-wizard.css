@@ -10,65 +10,195 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.level-up-wizard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ========================================================================== */
-/* WIZARD HEADER */
+/* CLASS FEATURES */
 /* ========================================================================== */
 
-.wizard-header {
+.class-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.class-feature-item {
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-left: 4px solid var(--iluw-accent-blue);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.class-feature-name {
+  font-size: 16px;
+  color: var(--iluw-accent-blue);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.class-feature-description {
+  font-size: 14px;
+  color: var(--iluw-text-secondary);
+  line-height: 1.6;
+}
+
+.class-feature-description p {
+  margin: 0 0 8px 0;
+}
+
+.class-feature-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================================================== *//* RUNESMITH PROGRESSION */
+/* ========================================================================== */
+
+.runesmith-section .wizard-section-header .wizard-section-icon {
+  color: #9b59b6;
+}
+
+.runesmith-notification {
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(142, 68, 173, 0.05));
+  border: 2px solid rgba(155, 89, 182, 0.3);
+  border-left: 4px solid #9b59b6;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.runesmith-change {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--iluw-text-primary);
+}
+
+.runesmith-change i {
+  color: #27ae60;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.runesmith-change strong {
+  color: #9b59b6;
+}
+
+.runesmith-reminder {
+  font-size: 13px;
+  color: var(--iluw-text-muted);
+  font-style: italic;
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(155, 89, 182, 0.2);
+}
+
+/* ========================================================================== *//* WIZARD HEADER */
+/* ========================================================================== */
+
+.level-up-wizard-app .wizard-header {
   padding: 16px;
   background: var(--iluw-bg-secondary);
   border-bottom: 2px solid var(--iluw-border-color);
 }
 
-.wizard-title {
+.level-up-wizard-app .wizard-title {
   font-size: 24px;
   color: var(--iluw-text-primary);
   margin: 0 0 8px 0;
   font-weight: bold;
 }
 
-.wizard-subtitle {
+.level-up-wizard-app .wizard-subtitle {
   font-size: 14px;
   color: var(--iluw-text-muted);
-  margin: 0;
+  margin: 0 0 12px 0;
+}
+
+/* Compact Progress Bar in Header */
+.level-up-wizard-app .wizard-progress-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.level-up-wizard-app .wizard-progress-compact .progress-bar-container {
+  flex: 1;
+  height: 20px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.level-up-wizard-app .wizard-progress-compact .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--iluw-accent-purple), var(--iluw-accent-blue));
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.level-up-wizard-app .wizard-progress-compact .progress-bar-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.level-up-wizard-app .wizard-progress-compact .progress-counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--iluw-text-muted);
+  white-space: nowrap;
 }
 
 /* ========================================================================== */
 /* WIZARD CONTENT */
 /* ========================================================================== */
 
-.wizard-content {
+.level-up-wizard-app .wizard-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
 }
 
-.wizard-section {
+.level-up-wizard-app .wizard-section {
   margin-bottom: 24px;
 }
 
-.wizard-section-header {
+.level-up-wizard-app .wizard-section-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
 }
 
-.wizard-section-title {
+.level-up-wizard-app .wizard-section-title {
   font-size: 20px;
   color: var(--iluw-text-primary);
   font-weight: 600;
   margin: 0;
 }
 
-.wizard-section-icon {
+.level-up-wizard-app .wizard-section-icon {
   color: var(--iluw-accent-purple);
   font-size: 20px;
 }
 
-.wizard-section-description {
+.level-up-wizard-app .wizard-section-description {
   font-size: 14px;
   color: var(--iluw-text-muted);
   margin: 0 0 12px 0;
@@ -155,7 +285,7 @@
 /* FEAT SELECTION */
 /* ========================================================================== */
 
-.feat-selection {
+.level-up-wizard-app .feat-selection {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -163,7 +293,7 @@
   margin-bottom: 16px;
 }
 
-.feat-selection-header {
+.level-up-wizard-app .feat-selection-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -183,7 +313,7 @@
   color: var(--iluw-accent-purple);
 }
 
-.feat-selected {
+.level-up-wizard-app .feat-selected {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -193,7 +323,7 @@
   border-radius: 6px;
 }
 
-.feat-not-selected {
+.level-up-wizard-app .feat-not-selected {
   padding: 12px;
   background: var(--iluw-bg-primary);
   border: 2px dashed var(--iluw-border-color);
@@ -210,11 +340,11 @@
   border: 2px solid var(--iluw-border-color);
 }
 
-.feat-info {
+.level-up-wizard-app .feat-info {
   flex: 1;
 }
 
-.feat-name {
+.level-up-wizard-app .feat-name {
   font-size: 16px;
   font-weight: 600;
   color: var(--iluw-text-primary);
@@ -233,7 +363,7 @@
 /* SPELL SELECTION */
 /* ========================================================================== */
 
-.spell-selection {
+.level-up-wizard-app .spell-selection {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -241,7 +371,7 @@
   margin-bottom: 16px;
 }
 
-.spell-rank-header {
+.level-up-wizard-app .spell-rank-header {
   font-size: 16px;
   font-weight: 600;
   color: var(--iluw-text-primary);
@@ -251,17 +381,17 @@
   gap: 8px;
 }
 
-.spell-rank-header i {
+.level-up-wizard-app .spell-rank-header i {
   color: var(--iluw-accent-blue);
 }
 
-.spell-list {
+.level-up-wizard-app .spell-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.spell-item {
+.level-up-wizard-app .spell-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -271,38 +401,83 @@
   border-radius: 6px;
 }
 
-.spell-item.selected {
+.level-up-wizard-app .spell-item.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.05);
 }
 
-.spell-icon-small {
+.level-up-wizard-app .spell-icon-small {
   width: 32px;
   height: 32px;
   border-radius: 4px;
   object-fit: cover;
 }
 
-.spell-info {
+.level-up-wizard-app .spell-info {
   flex: 1;
 }
 
-.spell-name {
+.level-up-wizard-app .spell-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--iluw-text-primary);
 }
 
-.spell-meta {
+.level-up-wizard-app .spell-meta {
   font-size: 11px;
   color: var(--iluw-text-muted);
+}
+
+.spells-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-accent-green);
+  border-radius: 6px;
+}
+
+.spells-not-selected {
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px dashed var(--iluw-border-color);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--iluw-text-muted);
+}
+
+.spells-info {
+  flex: 1;
+}
+
+.spells-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.level-up-wizard-app .spell-name-item {
+  font-size: 13px;
+  color: var(--iluw-text-secondary);
+  margin: 4px 0;
+  padding-left: 12px;
+  position: relative;
+}
+
+.level-up-wizard-app .spell-name-item::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--iluw-accent-purple);
 }
 
 /* ========================================================================== */
 /* ABILITY BOOST SELECTION */
 /* ========================================================================== */
 
-.ability-boost-selection {
+.level-up-wizard-app .ability-boost-selection {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -310,7 +485,7 @@
   margin-bottom: 16px;
 }
 
-.ability-boost-info {
+.level-up-wizard-app .ability-boost-info {
   background: rgba(96, 165, 250, 0.1);
   border: 1px solid var(--iluw-accent-blue);
   border-radius: 6px;
@@ -323,18 +498,18 @@
   font-size: 13px;
 }
 
-.ability-boost-info i {
+.level-up-wizard-app .ability-boost-info i {
   color: var(--iluw-accent-blue);
   font-size: 18px;
 }
 
-.ability-grid {
+.level-up-wizard-app .ability-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
 }
 
-.ability-button {
+.level-up-wizard-app .ability-button {
   padding: 16px;
   background: var(--iluw-bg-primary);
   border: 2px solid var(--iluw-border-color);
@@ -344,24 +519,24 @@
   text-align: center;
 }
 
-.ability-button:hover:not(.disabled) {
+.level-up-wizard-app .ability-button:hover:not(.disabled) {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
   transform: translateY(-2px);
 }
 
-.ability-button.selected {
+.level-up-wizard-app .ability-button.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.15);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 }
 
-.ability-button.disabled {
+.level-up-wizard-app .ability-button.disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.ability-abbr {
+.level-up-wizard-app .ability-abbr {
   font-size: 18px;
   font-weight: bold;
   color: var(--iluw-text-primary);
@@ -369,13 +544,13 @@
   margin-bottom: 6px;
 }
 
-.ability-score-display {
+.level-up-wizard-app .ability-score-display {
   font-size: 14px;
   color: var(--iluw-text-muted);
   margin-bottom: 4px;
 }
 
-.ability-modifier {
+.level-up-wizard-app .ability-modifier {
   font-size: 16px;
   font-weight: 600;
   color: var(--iluw-accent-green);
@@ -385,7 +560,7 @@
 /* SKILL SELECTION */
 /* ========================================================================== */
 
-.skill-selection {
+.level-up-wizard-app .skill-selection {
   background: var(--iluw-bg-secondary);
   border: 2px solid var(--iluw-border-color);
   border-radius: 8px;
@@ -393,13 +568,13 @@
   margin-bottom: 16px;
 }
 
-.skill-list {
+.level-up-wizard-app .skill-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
 }
 
-.skill-item {
+.level-up-wizard-app .skill-item {
   padding: 12px;
   background: var(--iluw-bg-primary);
   border: 2px solid var(--iluw-border-color);
@@ -411,33 +586,33 @@
   justify-content: space-between;
 }
 
-.skill-item:hover:not(.disabled) {
+.level-up-wizard-app .skill-item:hover:not(.disabled) {
   border-color: var(--iluw-accent-blue);
   background: var(--iluw-bg-hover);
 }
 
-.skill-item.selected {
+.level-up-wizard-app .skill-item.selected {
   border-color: var(--iluw-accent-green);
   background: rgba(16, 185, 129, 0.1);
 }
 
-.skill-item.disabled {
+.level-up-wizard-app .skill-item.disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.skill-name-rank {
+.level-up-wizard-app .skill-name-rank {
   flex: 1;
 }
 
-.skill-name-display {
+.level-up-wizard-app .skill-name-display {
   font-size: 14px;
   font-weight: 600;
   color: var(--iluw-text-primary);
   margin-bottom: 2px;
 }
 
-.skill-rank-display {
+.level-up-wizard-app .skill-rank-display {
   font-size: 11px;
   color: var(--iluw-text-muted);
 }
@@ -446,32 +621,165 @@
 /* WIZARD FOOTER */
 /* ========================================================================== */
 
-.wizard-footer {
-  padding: 16px;
+.level-up-wizard-app .wizard-footer {
+  padding: 20px;
   background: var(--iluw-bg-secondary);
   border-top: 2px solid var(--iluw-border-color);
+}
+
+/* Progress Section */
+.level-up-wizard-app .wizard-progress {
+  margin-bottom: 16px;
+}
+
+.level-up-wizard-app .progress-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.wizard-validation {
-  flex: 1;
+.level-up-wizard-app .progress-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--iluw-text-primary);
+}
+
+.level-up-wizard-app .progress-counter {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--iluw-text-muted);
-  font-size: 13px;
 }
 
-.wizard-validation.valid {
+/* Progress Bar */
+.level-up-wizard-app .progress-bar-container {
+  width: 100%;
+  height: 24px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.level-up-wizard-app .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--iluw-accent-purple), var(--iluw-accent-blue));
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.level-up-wizard-app .progress-bar-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Requirements Checklist */
+.level-up-wizard-app .requirements-checklist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--iluw-bg-primary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 8px;
+}
+
+.level-up-wizard-app .requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.level-up-wizard-app .requirement-item.complete {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.level-up-wizard-app .requirement-item.incomplete {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.level-up-wizard-app .requirement-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.level-up-wizard-app .requirement-item.complete .requirement-icon {
   color: var(--iluw-accent-green);
 }
 
-.wizard-validation.invalid {
+.level-up-wizard-app .requirement-item.incomplete .requirement-icon {
+  color: var(--iluw-text-muted);
+}
+
+.level-up-wizard-app .requirement-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--iluw-text-primary);
+}
+
+.level-up-wizard-app .requirement-name i {
+  font-size: 14px;
+  color: var(--iluw-accent-purple);
+}
+
+/* Validation Messages */
+.level-up-wizard-app .wizard-validation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.level-up-wizard-app .wizard-validation.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+}
+
+.level-up-wizard-app .wizard-validation.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid var(--iluw-accent-green);
+  color: var(--iluw-accent-green);
+}
+
+.level-up-wizard-app .wizard-validation.valid {
+  color: var(--iluw-accent-green);
+}
+
+.level-up-wizard-app .wizard-validation.invalid {
   color: var(--iluw-accent-red);
 }
 
-.wizard-footer-actions {
+.level-up-wizard-app .wizard-footer-actions {
   display: flex;
   gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Disabled submit button */
+.level-up-wizard-app .wizard-footer-actions button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ========================================================================== */

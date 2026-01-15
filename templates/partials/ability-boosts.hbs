@@ -1,0 +1,67 @@
+{{! Ability Boosts Partial
+  Parameters:
+  - abilityBoostInfo: Object with { hasBoosts, count, type }
+  - choices: Current choices object with abilityBoosts array
+  - actor: The actor object
+}}
+{{#if abilityBoostInfo.hasBoosts}}
+<div class="choice-section">
+  <div class="choice-section-header">
+    <div class="choice-section-title">
+      <i class="fas fa-bolt"></i>
+      Ability Boosts
+    </div>
+    <span class="choice-info">{{choices.abilityBoosts.length}}/{{abilityBoostInfo.count}} selected</span>
+  </div>
+  <div class="ability-boost-selection">
+    <div class="ability-boost-info">
+      <i class="fas fa-info-circle"></i>
+      <span>Select {{abilityBoostInfo.count}} ability scores to increase.</span>
+    </div>
+    <div class="ability-grid">
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'str')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="str">
+        <div class="ability-abbr">STR</div>
+        <div class="ability-score-display">{{actor.system.abilities.str.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.str.mod decimals=0 sign=true}}</div>
+      </div>
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'dex')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="dex">
+        <div class="ability-abbr">DEX</div>
+        <div class="ability-score-display">{{actor.system.abilities.dex.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.dex.mod decimals=0 sign=true}}</div>
+      </div>
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'con')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="con">
+        <div class="ability-abbr">CON</div>
+        <div class="ability-score-display">{{actor.system.abilities.con.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.con.mod decimals=0 sign=true}}</div>
+      </div>
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'int')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="int">
+        <div class="ability-abbr">INT</div>
+        <div class="ability-score-display">{{actor.system.abilities.int.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.int.mod decimals=0 sign=true}}</div>
+      </div>
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'wis')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="wis">
+        <div class="ability-abbr">WIS</div>
+        <div class="ability-score-display">{{actor.system.abilities.wis.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.wis.mod decimals=0 sign=true}}</div>
+      </div>
+      <div class="ability-button {{#if (includes choices.abilityBoosts 'cha')}}selected{{/if}}"
+           data-action="toggleAbilityBoost"
+           data-ability="cha">
+        <div class="ability-abbr">CHA</div>
+        <div class="ability-score-display">{{actor.system.abilities.cha.value}}</div>
+        <div class="ability-modifier">{{numberFormat actor.system.abilities.cha.mod decimals=0 sign=true}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{{/if}}

@@ -1,0 +1,31 @@
+{{! Skill Selector Partial
+  Parameters:
+  - skillIncreaseCount: Number of skill increases available
+  - availableSkills: Array of skill objects
+  - choices: Current choices object with skillIncreases array
+}}
+{{#if (gt skillIncreaseCount 0)}}
+<div class="choice-section">
+  <div class="choice-section-header">
+    <div class="choice-section-title">
+      <i class="fas fa-graduation-cap"></i>
+      Skill Increases
+    </div>
+    <span class="choice-info">{{choices.skillIncreases.length}}/{{skillIncreaseCount}} selected</span>
+  </div>
+  <div class="skill-selection">
+    <div class="skill-list">
+      {{#each availableSkills}}
+      <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+           data-action="toggleSkillIncrease"
+           data-skill="{{this.key}}">
+        <div class="skill-name-rank">
+          <div class="skill-name-display">{{this.name}}</div>
+          <div class="skill-rank-display">{{this.currentRankName}} → {{this.nextRankName}}</div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</div>
+{{/if}}

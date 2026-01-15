@@ -1,0 +1,428 @@
+{{! Feat Selector Template }}
+
+<div class="feat-selector-container">
+  <div class="selector-header">
+    <h2 class="selector-title">{{title}}</h2>
+
+  <div class="selector-filters">
+    {{! Search }}
+    <div class="filter-group">
+      <input type="text"
+             class="filter-search"
+             placeholder="{{localize 'intrinsics-pf2e-level-up-wizard.placeholders.search-feats'}}"
+             value="{{searchQuery}}">
+    </div>
+
+    {{! Level Filter }}
+    <div class="filter-group">
+      <label class="filter-label">{{localize 'intrinsics-pf2e-level-up-wizard.filters.level'}}</label>
+      <select class="filter-select" data-action="updateFilters" data-filter="level">
+        <option value="all" {{#if (eq selectedLevel 'all')}}selected{{/if}}>
+          {{localize 'intrinsics-pf2e-level-up-wizard.filters.all-levels'}}
+        </option>
+        {{#each (range 1 (add targetLevel 1)) as |level|}}
+        <option value="{{level}}" {{#if (eq ../selectedLevel level)}}selected{{/if}}>
+          Level {{level}}
+        </option>
+        {{/each}}
+      </select>
+    </div>
+
+    {{! Uncommon Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-uncommon"
+               {{#if showUncommon}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="uncommon">
+        <label for="show-uncommon">Show Uncommon</label>
+      </div>
+    </div>
+
+    {{! Rare Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-rare"
+               {{#if showRare}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="rare">
+        <label for="show-rare">Show Rare</label>
+      </div>
+    </div>
+
+    {{! Level Range Filter }}
+    <div class="filter-group">
+      <label class="filter-label">Level Range</label>
+      <div class="filter-level-range">
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Min"
+               value="{{minLevel}}"
+               min="1"
+               max="{{targetLevel}}"
+               data-action="updateFilters"
+               data-filter="minLevel">
+        <span>to</span>
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Max"
+               value="{{maxLevel}}"
+               min="1"
+               max="{{targetLevel}}"
+               data-action="updateFilters"
+               data-filter="maxLevel">
+      </div>
+    </div>
+
+    {{! Archetype Filter (for free archetype feats) }}
+    {{#if (eq featType 'freeArchetypeFeats')}}
+    <div class="filter-group archetype-search-group">
+      <label class="filter-label">
+        <i class="fas fa-book"></i>
+        Dedication
+      </label>
+      <input type="text"
+             class="archetype-search"
+             placeholder="Filter by dedication (e.g., fighter)..."
+             value="{{archetypeSearchQuery}}">
+    </div>
+    {{/if}}
+
+    {{! Skill Filter (for skill feats) }}
+    {{#if isSkillFeats}}
+    <div class="filter-group skill-filter-group">
+      <label class="filter-label">
+        <i class="fas fa-graduation-cap"></i>
+        Skill
+      </label>
+      <select class="filter-select" data-action="updateFilters" data-filter="skillFilter">
+        <option value="all" {{#if (eq skillFilter 'all')}}selected{{/if}}>All Skills</option>
+        {{#each availableSkills as |skill|}}
+        <option value="{{skill.key}}" {{#if (eq ../skillFilter skill.key)}}selected{{/if}}>{{skill.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{/if}}
+
+    {{! Kineticist Gate Filter (for kineticist class feats) }}
+    {{#if isKineticist}}
+    <div class="filter-group kineticist-gate-filter">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="gate-filter"
+               {{#if showGateFilter}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="gateFilter">
+        <label for="gate-filter">
+          <i class="fas fa-fire-flame-curved"></i>
+          Highlight Gates
+        </label>
+      </div>
+      {{#if showGateFilter}}
+      <span class="gate-info" title="Your Gates: {{actorGatesDisplay}}">
+        <i class="fas fa-info-circle"></i>
+        {{actorGatesDisplay}}
+      </span>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    {{! Sort Filter }}
+    <div class="filter-group">
+      <label class="filter-label">{{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-by'}}</label>
+      <select class="filter-select" data-action="updateFilters" data-filter="sort">
+        <option value="level-desc" {{#if (eq sortMethod 'level-desc')}}selected{{/if}}>
+          {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-level-desc'}}
+        </option>
+        <option value="level-asc" {{#if (eq sortMethod 'level-asc')}}selected{{/if}}>
+          {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-level-asc'}}
+        </option>
+        <option value="alphabetical" {{#if (eq sortMethod 'alphabetical')}}selected{{/if}}>
+          {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-alphabetical'}}
+        </option>
+      </select>
+    </div>
+  </div>
+  </div>
+
+  <div class="selector-content">
+  {{#if comparisonMode}}
+  {{! COMPARISON VIEW }}
+  <div class="comparison-mode">
+    {{#each comparisonDetails as |feat index|}}
+    <div class="comparison-column">
+      <div class="comparison-header">
+        <span class="comparison-number">{{add index 1}}</span>
+        <i class="fas fa-times comparison-close"
+           data-action="removeFromCompare"
+           data-feat-uuid="{{feat.uuid}}"></i>
+      </div>
+
+      <div class="feat-preview-header">
+        <h3 class="feat-preview-title">{{feat.name}}</h3>
+        <div class="feat-preview-meta">
+          <span><strong>Level:</strong> {{feat.level}}</span>
+          <span><strong>Type:</strong> {{feat.type}}</span>
+          <span><strong>Rarity:</strong> {{feat.rarity}}</span>
+        </div>
+
+        {{#if feat.traitsWithGateStatus}}
+        <div class="feat-preview-traits">
+          {{#each feat.traitsWithGateStatus as |traitObj|}}
+          <span class="trait-badge {{traitObj.gateStatus}}">{{traitObj.name}}</span>
+          {{/each}}
+        </div>
+        {{else if feat.traits}}
+        <div class="feat-preview-traits">
+          {{#each feat.traits as |trait|}}
+          <span class="trait-badge">{{trait}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if feat.prerequisites}}
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">{{localize 'intrinsics-pf2e-level-up-wizard.labels.prerequisites'}}</h4>
+        <div class="feat-preview-prerequisites {{#unless feat.prerequisitesMet}}unmet{{/unless}}">
+          {{{feat.prerequisites}}}
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="feat-preview-section">
+        <div class="feat-preview-description">
+          {{{feat.description}}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  {{else}}
+  {{! NORMAL VIEW }}
+  <div class="feat-list-column">
+    <div class="feat-list-info">
+      <span>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.feat-count' count=featCount}}</span>
+      <span class="feat-count">{{featCount}}</span>
+    </div>
+
+    <div class="feat-list-container">
+      {{#if hasArchetypes}}
+      {{! Grouped by archetype }}
+      {{#each groupedFeats as |archetype|}}
+      <div class="archetype-section">
+        <div class="archetype-header">
+          <span class="archetype-name">{{archetype.name}}</span>
+          <span class="archetype-dedication {{#if archetype.hasDedication}}has-dedication{{else}}no-dedication{{/if}}">
+            {{#if archetype.hasDedication}}
+              <i class="fas fa-check"></i> Dedication Taken
+            {{else}}
+              <i class="fas fa-exclamation-triangle"></i> No Dedication
+            {{/if}}
+          </span>
+        </div>
+
+        {{#each archetype.feats as |feat|}}
+        {{> featCard feat=feat}}
+        {{/each}}
+      </div>
+      {{/each}}
+
+      {{else if feats}}
+      {{! Flat list }}
+      {{#each feats as |feat|}}
+      {{> featCard feat=feat}}
+      {{/each}}
+
+      {{else}}
+      {{! Empty state }}
+      <div class="feat-list-empty">
+        <i class="fas fa-search"></i>
+        <p>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.no-feats-available'}}</p>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="feat-preview-column">
+    <div class="feat-preview-panel">
+      {{#if activeFeatDetails}}
+      {{! Feat selected - show preview }}
+      <div class="feat-preview-header">
+        <h3 class="feat-preview-title">{{activeFeatDetails.name}}</h3>
+        <div class="feat-preview-meta">
+          <span><strong>Level:</strong> {{activeFeatDetails.level}}</span>
+          <span><strong>Type:</strong> {{activeFeatDetails.type}}</span>
+          <span><strong>Rarity:</strong> {{activeFeatDetails.rarity}}</span>
+        </div>
+
+        {{#if activeFeatDetails.traitsWithGateStatus}}
+        <div class="feat-preview-traits">
+          {{#each activeFeatDetails.traitsWithGateStatus as |traitObj|}}
+          <span class="trait-badge {{traitObj.gateStatus}}">{{traitObj.name}}</span>
+          {{/each}}
+        </div>
+        {{else if activeFeatDetails.traits}}
+        <div class="feat-preview-traits">
+          {{#each activeFeatDetails.traits as |trait|}}
+          <span class="trait-badge">{{trait}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if activeFeatDetails.prerequisites}}
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">{{localize 'intrinsics-pf2e-level-up-wizard.labels.prerequisites'}}</h4>
+        <div class="feat-preview-prerequisites {{#unless activeFeatDetails.prerequisitesMet}}unmet{{/unless}}">
+          {{{activeFeatDetails.prerequisites}}}
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">Description</h4>
+        <div class="feat-preview-description">
+          {{{activeFeatDetails.description}}}
+        </div>
+      </div>
+
+      {{#if activeFeatDetails.actions}}
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">{{localize 'intrinsics-pf2e-level-up-wizard.labels.actions'}}</h4>
+        <div class="feat-preview-description">
+          {{activeFeatDetails.actions}}
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if activeFeatDetails.frequency}}
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">Frequency</h4>
+        <div class="feat-preview-description">
+          {{activeFeatDetails.frequency}}
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if activeFeatDetails.trigger}}
+      <div class="feat-preview-section">
+        <h4 class="feat-preview-section-title">Trigger</h4>
+        <div class="feat-preview-description">
+          {{activeFeatDetails.trigger}}
+        </div>
+      </div>
+      {{/if}}
+
+      {{else}}
+      {{! No feat selected - placeholder }}
+      <div class="feat-preview-placeholder">
+        <i class="fas fa-hand-pointer"></i>
+        <p>{{localize 'intrinsics-pf2e-level-up-wizard.messages.info.select-feat'}}</p>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+    {{/if}}
+  </div>
+
+  <div class="selector-footer">
+    <div class="selector-actions-left">
+      {{#if (and (not comparisonMode) canAddToCompare activeFeat)}}
+      <button type="button"
+              class="btn btn-secondary"
+              data-action="addToCompare"
+              data-feat-uuid="{{activeFeat}}">
+        <i class="fas fa-clone"></i> Add to Compare
+      </button>
+      {{/if}}
+
+      <button type="button"
+              class="compare-toggle {{#if comparisonMode}}active{{/if}}"
+              data-action="compareToggle">
+        <i class="fas fa-balance-scale"></i>
+        {{#if comparisonMode}}
+          Exit Comparison ({{comparisonFeats.length}})
+        {{else}}
+          Compare Mode
+        {{/if}}
+      </button>
+    </div>
+
+    <div class="selector-actions-right">
+      <button type="button" class="btn btn-secondary" data-action="cancel">
+        <i class="fas fa-times"></i> {{localize 'intrinsics-pf2e-level-up-wizard.buttons.cancel'}}
+      </button>
+
+      {{#unless comparisonMode}}
+      <button type="button"
+              class="btn btn-primary"
+              data-action="confirm"
+              {{#unless currentSelection}}disabled{{/unless}}>
+        <i class="fas fa-check"></i> {{localize 'intrinsics-pf2e-level-up-wizard.buttons.confirm'}}
+      </button>
+      {{/unless}}
+    </div>
+  </div>
+</div>
+
+{{! Feat Card Partial }}
+{{#*inline "featCard"}}
+<div class="feat-card {{#if (eq feat.uuid ../activeFeat)}}active{{/if}} {{#if (eq feat.uuid ../currentSelection)}}selected{{/if}}"
+     data-action="previewFeat"
+     data-feat-uuid="{{feat.uuid}}">
+
+  <div class="feat-card-header">
+    <img src="{{feat.img}}" alt="{{feat.name}}" class="feat-card-icon">
+
+    <div class="feat-card-info">
+      <div class="feat-card-title">
+        {{feat.name}}
+        <span class="feat-card-level">Lv. {{feat.system.level.value}}</span>
+        {{#if (notEqual feat.rarity 'common')}}
+        <span class="rarity-badge {{feat.rarityClass}}">{{capitalize feat.rarity}}</span>
+        {{/if}}
+      </div>
+      <div class="feat-card-type">{{feat.featTypeName}}</div>
+    </div>
+  </div>
+
+  {{! Show traits with gate status if available, otherwise fallback to regular traits }}
+  {{#if feat.traitsWithGateStatus}}
+  <div class="feat-card-traits">
+    {{#each feat.traitsWithGateStatus as |traitObj|}}
+    <span class="trait-badge trait-badge-small {{traitObj.gateStatus}}">{{traitObj.name}}</span>
+    {{/each}}
+  </div>
+  {{else if feat.system.traits.value}}
+  <div class="feat-card-traits">
+    {{#each feat.system.traits.value as |trait|}}
+    <span class="trait-badge trait-badge-small">{{trait}}</span>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{#if feat.system.description.value}}
+  <div class="feat-card-description">
+    {{plainText feat.system.description.value}}
+  </div>
+  {{/if}}
+
+  {{#if feat.prerequisitesText}}
+  <div class="feat-card-prerequisites {{feat.prerequisitesClass}}">
+    <i class="fas fa-list-check"></i>
+    <span>{{feat.prerequisitesText}}</span>
+  </div>
+  {{/if}}
+
+  {{#if feat.needsDedication}}
+  <div class="feat-card-prerequisites unmet">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>Requires dedication feat</span>
+  </div>
+  {{/if}}
+</div>
+{{/inline}}

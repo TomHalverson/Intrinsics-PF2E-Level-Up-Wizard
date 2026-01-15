@@ -28,19 +28,29 @@ export class LevelUpStateManager {
       dualClassFeats: null,
       skillIncreases: [],
       abilityBoosts: [],
-      spells: {
-        cantrips: [],
-        rank1: [],
-        rank2: [],
-        rank3: [],
-        rank4: [],
-        rank5: [],
-        rank6: [],
-        rank7: [],
-        rank8: [],
-        rank9: [],
-        rank10: []
-      }
+      // Spell selections
+      cantrips: [],
+      rank1Spells: [],
+      rank2Spells: [],
+      rank3Spells: [],
+      rank4Spells: [],
+      rank5Spells: [],
+      rank6Spells: [],
+      rank7Spells: [],
+      rank8Spells: [],
+      rank9Spells: [],
+      rank10Spells: [],
+      // Additional spell learning (for prepared/spontaneous casters)
+      additionalRank1Spells: [],
+      additionalRank2Spells: [],
+      additionalRank3Spells: [],
+      additionalRank4Spells: [],
+      additionalRank5Spells: [],
+      additionalRank6Spells: [],
+      additionalRank7Spells: [],
+      additionalRank8Spells: [],
+      additionalRank9Spells: [],
+      additionalRank10Spells: []
     };
 
     this.complete = false;
@@ -182,7 +192,8 @@ export class LevelUpStateManager {
       'kineticist' // Has kinetic elements but still has spell-like features
     ];
 
-    return spellcasterClasses.includes(classItem.slug);
+    const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+    return spellcasterClasses.includes(classSlug);
   }
 
   /**
@@ -208,7 +219,8 @@ export class LevelUpStateManager {
       'necromancer': 'occult'
     };
 
-    return traditions[classItem.slug] || null;
+    const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+    return traditions[classSlug] || null;
   }
 
   /**

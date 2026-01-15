@@ -1,0 +1,48 @@
+{{! Spell Choice Partial
+  Parameters:
+  - spellSelection: Object with { rank, maxSpells, current, spellKey }
+  - choicesWithNames: Resolved spell names
+  - level: Current level
+}}
+<div class="choice-section">
+  <div class="choice-section-header">
+    <div class="choice-section-title">
+      <i class="fas fa-wand-sparkles"></i>
+      {{#if (eq spellSelection.rank 0)}}Cantrips{{else}}Rank {{spellSelection.rank}} Spells{{/if}}
+    </div>
+    <span class="choice-info">{{spellSelection.current.length}}/{{spellSelection.maxSpells}} selected</span>
+  </div>
+  <div class="choice-display {{#if (gt spellSelection.current.length 0)}}has-choice{{/if}}">
+    {{#if (gt spellSelection.current.length 0)}}
+    <div class="choice-details">
+      <div class="spell-names-list">
+        {{#each spellSelection.current}}
+        <p class="spell-name-item">
+          {{lookup (lookup ../choicesWithNames ../spellSelection.spellKey) @index}}
+        </p>
+        {{/each}}
+      </div>
+    </div>
+    <div class="choice-actions">
+      <button type="button" class="btn btn-secondary btn-small"
+              data-action="selectSpell"
+              data-rank="{{spellSelection.rank}}"
+              data-spell-type="{{spellSelection.spellKey}}"
+              data-max-spells="{{spellSelection.maxSpells}}">
+        <i class="fas fa-edit"></i> Change
+      </button>
+    </div>
+    {{else}}
+    <span class="choice-placeholder">No spells selected</span>
+    <div class="choice-actions">
+      <button type="button" class="btn btn-primary btn-small"
+              data-action="selectSpell"
+              data-rank="{{spellSelection.rank}}"
+              data-spell-type="{{spellSelection.spellKey}}"
+              data-max-spells="{{spellSelection.maxSpells}}">
+        <i class="fas fa-plus"></i> Select
+      </button>
+    </div>
+    {{/if}}
+  </div>
+</div>
