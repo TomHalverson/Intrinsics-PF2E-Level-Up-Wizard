@@ -42,7 +42,7 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
   static DEFAULT_OPTIONS = {
     id: 'spell-selector-{id}',
     tag: 'div',
-    classes: ['spell-selector-app'],
+    classes: ['intrinsics-level-up-wizard', 'spell-selector-app'],
     window: {
       title: 'Select Spells',
       icon: 'fa-solid fa-sparkles',
@@ -62,6 +62,7 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       updateSearch: SpellSelectorApp.prototype._onUpdateSearch,
       updateFilters: SpellSelectorApp.prototype._onUpdateFilters,
       changeTradition: SpellSelectorApp.prototype._onChangeTradition,
+      speakPreview: SpellSelectorApp.prototype._onSpeakPreview,
       confirm: SpellSelectorApp.prototype._onConfirm,
       cancel: SpellSelectorApp.prototype._onCancel
     }
@@ -167,6 +168,55 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     }
   }
 
+  /**
+   * Save the currently focused input before render
+   */
+  _saveFocusState() {
+    const element = this.element;
+    if (!element) return;
+    
+    const activeElement = element.querySelector(':focus');
+    if (activeElement) {
+      // Store the selector to find this element again after render
+      if (activeElement.classList.contains('filter-search')) {
+        // Determine which search input it is by checking data-filter attribute or position
+        const filterType = activeElement.dataset.filter;
+        if (filterType === 'trait') {
+          this._focusedInput = { selector: '.filter-search[data-filter="trait"]', cursorPos: activeElement.selectionStart };
+        } else {
+          this._focusedInput = { selector: '.filter-search:not([data-filter])', cursorPos: activeElement.selectionStart };
+        }
+      } else {
+        this._focusedInput = null;
+      }
+    }
+  }
+
+  /**
+   * Restore focus to the previously focused input after render
+   */
+  _restoreFocusState() {
+    if (!this._focusedInput) return;
+    
+    const element = this.element;
+    if (!element) return;
+    
+    const input = element.querySelector(this._focusedInput.selector);
+    if (input) {
+      // Use setTimeout to ensure the DOM is fully ready
+      setTimeout(() => {
+        input.focus();
+        // Restore cursor position if possible
+        if (this._focusedInput.cursorPos !== undefined && input.setSelectionRange) {
+          const pos = this._focusedInput.cursorPos;
+          input.setSelectionRange(pos, pos);
+        }
+      }, 0);
+    }
+    
+    this._focusedInput = null;
+  }
+
   _onRender(context, options) {
     super._onRender(context, options);
 
@@ -223,6 +273,9 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
           }
         });
       });
+
+      // Restore focus to search input if it was focused before render
+      this._restoreFocusState();
     }
   }
 
@@ -389,6 +442,113 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     return rarityMap[rarity] || 'rarity-common';
   }
 
+  /**
+   * Update only the spell list without re-rendering the entire application
+   * This preserves input focus and scroll position
+   */
+  async _updateSpellListOnly() {
+    const element = this.element;
+    if (!element) return;
+
+    // Get filtered spells
+    const spells = await this._getFilteredSpells();
+
+    // Update spell count display
+    const spellCountEl = element.querySelector('.spell-count');
+    if (spellCountEl) {
+      spellCountEl.textContent = spells.length;
+    }
+
+    const spellInfoEl = element.querySelector('.spell-list-info span');
+    if (spellInfoEl) {
+      spellInfoEl.textContent = game.i18n.format('intrinsics-pf2e-level-up-wizard.messages.info.spell-count', { count: spells.length });
+    }
+
+    // Update spell list container
+    const listContainer = element.querySelector('.spell-list-container');
+    if (!listContainer) return;
+
+    // Build new HTML for spell list
+    let html = '';
+
+    if (spells.length > 0) {
+      for (const spell of spells) {
+        html += this._renderSpellCard(spell);
+      }
+    } else {
+      // Empty state
+      html = `<div class="spell-list-empty">
+        <i class="fas fa-search"></i>
+        <p>${game.i18n.localize('intrinsics-pf2e-level-up-wizard.messages.info.no-spells-available')}</p>
+      </div>`;
+    }
+
+    listContainer.innerHTML = html;
+
+    // Restore scroll position
+    if (this.scrollPosition > 0) {
+      listContainer.scrollTop = this.scrollPosition;
+    }
+
+    // Re-activate listeners for enriched HTML content
+    listContainer.querySelectorAll('.spell-card-description').forEach(desc => {
+      TextEditor.activateListeners(desc);
+    });
+  }
+
+  /**
+   * Render a single spell card HTML
+   */
+  _renderSpellCard(spell) {
+    const isActive = spell.uuid === this.activeSpell;
+    const isSelected = spell.isSelected;
+    const rarityClass = spell.rarityClass || '';
+    const rarity = spell.rarity || 'common';
+
+    let html = `<div class="spell-card ${isActive ? 'active' : ''} ${isSelected ? 'selected' : ''}"
+         data-action="previewSpell"
+         data-spell-uuid="${spell.uuid}">`;
+
+    html += `<div class="spell-card-header">`;
+    html += `<img src="${spell.img}" alt="${spell.name}" class="spell-card-icon">`;
+    html += `<div class="spell-card-info">`;
+    html += `<div class="spell-card-title">${spell.name}`;
+    html += `<span class="spell-card-rank">Rank ${spell.system.level.value}</span>`;
+    if (rarity !== 'common') {
+      html += `<span class="rarity-badge ${rarityClass}">${rarity.charAt(0).toUpperCase() + rarity.slice(1)}</span>`;
+    }
+    html += `</div>`;
+    if (spell.school) {
+      html += `<div class="spell-card-school">${spell.school.charAt(0).toUpperCase() + spell.school.slice(1)}</div>`;
+    }
+    html += `</div>`;
+    
+    // Selection checkbox
+    html += `<div class="spell-card-select" data-action="toggleSpell" data-spell-uuid="${spell.uuid}">`;
+    html += `<i class="fas ${isSelected ? 'fa-check-square' : 'fa-square'}"></i>`;
+    html += `</div>`;
+    html += `</div>`;
+
+    // Traits
+    const traits = spell.system.traits?.value || [];
+    if (traits.length > 0) {
+      html += `<div class="spell-card-traits">`;
+      for (const trait of traits) {
+        html += `<span class="trait-badge trait-badge-small">${trait}</span>`;
+      }
+      html += `</div>`;
+    }
+
+    // Description snippet
+    if (spell.system.description?.value) {
+      const plainText = spell.system.description.value.replace(/<[^>]*>/g, '').substring(0, 150);
+      html += `<div class="spell-card-description">${plainText}...</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
   /* -------------------------------------------- */
   /*  Event Handlers                              */
   /* -------------------------------------------- */
@@ -433,11 +593,11 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
   async _onUpdateSearch(event, target) {
     this.searchQuery = target.value;
 
-    // Debounce search to prevent losing focus on every keystroke
+    // Debounce search - use partial update to preserve input focus
     clearTimeout(this._searchTimeout);
     this._searchTimeout = setTimeout(async () => {
       this._saveScrollPosition();
-      await this.render();
+      await this._updateSpellListOnly();
     }, 300);
   }
 
@@ -456,11 +616,11 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
         break;
       case 'trait':
         this.traitFilter = target.value;
-        // Debounce trait filter to prevent losing focus on every keystroke
+        // Debounce trait filter - use partial update to preserve input focus
         clearTimeout(this._traitFilterTimeout);
         this._traitFilterTimeout = setTimeout(async () => {
           this._saveScrollPosition();
-          await this.render();
+          await this._updateSpellListOnly();
         }, 300);
         return; // Early return since we're handling render in the timeout
       case 'minLevel':
@@ -472,6 +632,7 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     }
 
     this._saveScrollPosition();
+    this._saveFocusState();
     await this.render();
   }
 
@@ -589,6 +750,22 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       this._saveScrollPosition();
       await this.render();
     }
+  }
+
+  async _onSpeakPreview(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Find the preview panel to get the TTS text
+    const previewPanel = this.element.querySelector('.spell-preview-panel[data-tts]');
+    if (!previewPanel) return;
+
+    const text = previewPanel.getAttribute('data-tts');
+    if (!text || text.trim() === '.' || text.trim() === '') return;
+
+    // Import and use TTSHelper
+    const { TTSHelper } = await import('./helpers/tts-helper.js');
+    TTSHelper.toggle(text, target);
   }
 
   async _onConfirm(event, target) {

@@ -118,8 +118,10 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
       context.abilityBoostInfo = ClassFeaturesHelpers.detectAbilityBoosts(this.actor, this.selectedLevel);
 
       // Get skill increase count and available skills
+      // Calculate planned skill increases from earlier levels in the build plan
+      const plannedSkillIncreases = this._getPlannedSkillIncreases(this.selectedLevel);
       context.skillIncreaseCount = ClassFeaturesHelpers.getSkillIncreasesForLevel(this.actor, this.selectedLevel);
-      context.availableSkills = context.skillIncreaseCount > 0 ? SkillsHelpers.getSkillsForLevel(this.actor, this.selectedLevel) : [];
+      context.availableSkills = context.skillIncreaseCount > 0 ? SkillsHelpers.getSkillsForLevel(this.actor, this.selectedLevel, plannedSkillIncreases) : [];
 
       // Check if spellcaster
       context.isSpellcaster = ClassFeaturesHelpers.isSpellcaster(this.actor);
@@ -260,6 +262,32 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
     debugLog('BuildPlannerApp._prepareContext', context);
 
     return context;
+  }
+
+  /**
+   * Calculate planned skill increases from earlier levels in the build plan
+   * @param {number} targetLevel - The level to calculate increases up to (exclusive)
+   * @returns {Object} Object mapping skill keys to number of planned increases
+   */
+  _getPlannedSkillIncreases(targetLevel) {
+    const plannedIncreases = {};
+    
+    // Only count levels between actor's current level and the target level
+    // This way we account for already-applied increases on the actor
+    const startLevel = this.currentLevel + 1;
+    
+    for (let level = startLevel; level < targetLevel; level++) {
+      const levelData = this.buildPlan.levels[level];
+      const skillIncreases = levelData?.choices?.skillIncreases || [];
+      
+      for (const skillKey of skillIncreases) {
+        plannedIncreases[skillKey] = (plannedIncreases[skillKey] || 0) + 1;
+      }
+    }
+    
+    debugLog('BuildPlannerApp._getPlannedSkillIncreases', `Planned increases up to level ${targetLevel}:`, plannedIncreases);
+    
+    return plannedIncreases;
   }
 
   _onRender(context, options) {

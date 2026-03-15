@@ -71,6 +71,10 @@ export async function getFeatsForLevel(actor, type, targetLevel, options = {}) {
           searchQuery.push('Orc');
         }
       }
+      // Special case: Kholo ancestry (formerly Gnoll) - include Gnoll trait for legacy feats
+      if (ancestry?.name === 'Kholo' || ancestry?.slug === 'kholo') {
+        searchQuery.push('Gnoll');
+      }
       break;
 
     case 'general':
@@ -441,10 +445,44 @@ export function hasArchetypeDedication(actor, archetypeName) {
 export function getArchetypeDedications(actor) {
   const dedications = actor.items.filter(i =>
     i.type === 'feat' &&
-    i.slug?.includes('dedication')
+    i.slug?.includes('dedication') &&
+    !i.system?.traits?.value?.includes('mythic') // Exclude mythic dedications
   );
 
   return dedications.map(d => d.slug.replace('-dedication', ''));
+}
+
+/**
+ * Get all mythic dedications actor has
+ * @param {Actor} actor - The actor
+ * @returns {Array<string>} Array of mythic archetype names (slugs without -dedication)
+ */
+export function getMythicDedications(actor) {
+  const dedications = actor.items.filter(i =>
+    i.type === 'feat' &&
+    i.slug?.includes('dedication') &&
+    i.system?.traits?.value?.includes('mythic')
+  );
+
+  return dedications.map(d => d.slug.replace('-dedication', ''));
+}
+
+/**
+ * Check if actor has a mythic dedication
+ * @param {Actor} actor - The actor
+ * @param {string} mythicName - Mythic archetype name
+ * @returns {boolean} True if has dedication
+ */
+export function hasMythicDedication(actor, mythicName) {
+  if (!mythicName) return false;
+
+  const dedicationSlug = `${mythicName}-dedication`;
+
+  return actor.items.some(i =>
+    i.type === 'feat' &&
+    i.slug === dedicationSlug &&
+    i.system?.traits?.value?.includes('mythic')
+  );
 }
 
 /**

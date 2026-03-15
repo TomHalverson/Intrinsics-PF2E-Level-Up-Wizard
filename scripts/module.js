@@ -35,8 +35,15 @@ Hooks.once('init', async () => {
 /**
  * Module ready - set up buttons and listeners
  */
-Hooks.once('ready', () => {
+Hooks.once('ready', async () => {
   console.log(`${MODULE_TITLE} | Module ready`);
+
+  // Initialize TTS system
+  const { TTSHelper } = await import('./helpers/tts-helper.js');
+  await TTSHelper.initialize();
+  
+  // Apply accessibility settings to document
+  applyAccessibilitySettings();
 
   // Initialize global API
   initializeAPI();
@@ -46,7 +53,49 @@ Hooks.once('ready', () => {
 
   // Register hook for level-up detection
   Hooks.on('updateActor', onActorUpdate);
+  
+  // Register hook to apply accessibility settings when any app renders
+  Hooks.on('renderApplication', onRenderApplication);
+  Hooks.on('renderApplicationV2', onRenderApplicationV2);
 });
+
+/**
+ * Apply accessibility settings when apps render
+ */
+function onRenderApplication(app, html, data) {
+  // Check if this is one of our apps
+  if (html.hasClass && html.hasClass('intrinsics-level-up-wizard')) {
+    applyAccessibilityToElement(html[0] || html);
+  }
+}
+
+function onRenderApplicationV2(app, element, options) {
+  // Check if this is one of our apps
+  if (element.classList && element.classList.contains('intrinsics-level-up-wizard')) {
+    applyAccessibilityToElement(element);
+  }
+}
+
+/**
+ * Apply accessibility settings to a specific element
+ */
+async function applyAccessibilityToElement(element) {
+  const useDyslexiaFont = game.settings.get(MODULE_NAME, 'dyslexia-friendly-font');
+  const useEnhancedReadability = game.settings.get(MODULE_NAME, 'enhanced-readability');
+  const useHighContrast = game.settings.get(MODULE_NAME, 'high-contrast');
+  const useTTS = game.settings.get(MODULE_NAME, 'text-to-speech');
+
+  element.classList.toggle('dyslexia-font', useDyslexiaFont);
+  element.classList.toggle('enhanced-readability', useEnhancedReadability);
+  element.classList.toggle('high-contrast', useHighContrast);
+  element.classList.toggle('tts-enabled', useTTS);
+  
+  // Add TTS buttons if enabled
+  if (useTTS) {
+    const { TTSHelper } = await import('./helpers/tts-helper.js');
+    TTSHelper.addButtonsToContainer(element);
+  }
+}
 
 // ============================================================================
 // SETTINGS REGISTRATION
@@ -139,6 +188,113 @@ function registerSettings() {
     config: true,
     type: Boolean,
     default: false
+  });
+
+  // ============================================================================
+  // ACCESSIBILITY SETTINGS
+  // ============================================================================
+
+  // Dyslexia-friendly font
+  game.settings.register(MODULE_NAME, 'dyslexia-friendly-font', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.dyslexia-friendly-font.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.dyslexia-friendly-font.hint'),
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => applyAccessibilitySettings()
+  });
+
+  // Text-to-speech
+  game.settings.register(MODULE_NAME, 'text-to-speech', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.text-to-speech.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.text-to-speech.hint'),
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => applyAccessibilitySettings()
+  });
+
+  // TTS voice selection
+  game.settings.register(MODULE_NAME, 'tts-voice', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.tts-voice.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.tts-voice.hint'),
+    scope: 'client',
+    config: true,
+    type: String,
+    choices: getTTSVoiceChoices(),
+    default: ''
+  });
+
+  // TTS speech rate
+  game.settings.register(MODULE_NAME, 'tts-rate', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.tts-rate.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.tts-rate.hint'),
+    scope: 'client',
+    config: true,
+    type: Number,
+    range: {
+      min: 0.5,
+      max: 2,
+      step: 0.1
+    },
+    default: 1
+  });
+
+  // Enhanced readability (larger text, more spacing)
+  game.settings.register(MODULE_NAME, 'enhanced-readability', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.enhanced-readability.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.enhanced-readability.hint'),
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => applyAccessibilitySettings()
+  });
+
+  // High contrast mode
+  game.settings.register(MODULE_NAME, 'high-contrast', {
+    name: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.high-contrast.name'),
+    hint: game.i18n.localize('intrinsics-pf2e-level-up-wizard.settings.high-contrast.hint'),
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => applyAccessibilitySettings()
+  });
+}
+
+/**
+ * Get available TTS voices as choices for settings
+ */
+function getTTSVoiceChoices() {
+  const choices = { '': 'Default' };
+  if ('speechSynthesis' in window) {
+    // Note: voices may not be loaded immediately, but settings will use default
+    const voices = speechSynthesis.getVoices();
+    voices.forEach((voice, index) => {
+      choices[index.toString()] = `${voice.name} (${voice.lang})`;
+    });
+  }
+  return choices;
+}
+
+/**
+ * Apply accessibility settings to all open wizard windows
+ */
+export function applyAccessibilitySettings() {
+  const useDyslexiaFont = game.settings.get(MODULE_NAME, 'dyslexia-friendly-font');
+  const useEnhancedReadability = game.settings.get(MODULE_NAME, 'enhanced-readability');
+  const useHighContrast = game.settings.get(MODULE_NAME, 'high-contrast');
+  const useTTS = game.settings.get(MODULE_NAME, 'text-to-speech');
+
+  // Apply to all intrinsics wizard elements
+  document.querySelectorAll('.intrinsics-level-up-wizard').forEach(el => {
+    el.classList.toggle('dyslexia-font', useDyslexiaFont);
+    el.classList.toggle('enhanced-readability', useEnhancedReadability);
+    el.classList.toggle('high-contrast', useHighContrast);
+    el.classList.toggle('tts-enabled', useTTS);
   });
 }
 

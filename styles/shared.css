@@ -202,7 +202,20 @@
   border-radius: 6px;
   color: var(--iluw-text-primary);
   font-size: 14px;
+  line-height: 1.5;
   transition: border-color 0.2s ease;
+}
+
+/* Ensure select dropdowns are not clipped */
+.intrinsics-level-up-wizard select {
+  height: auto;
+  min-height: 2.5em;
+  overflow: visible;
+}
+
+.intrinsics-level-up-wizard select option {
+  padding: 8px 12px;
+  line-height: 1.5;
 }
 
 .intrinsics-level-up-wizard input:focus,

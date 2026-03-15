@@ -4,7 +4,7 @@
  */
 
 import dataProvider from './data-provider.js';
-import { checkPrerequisites, hasArchetypeDedication } from './helpers/feat-helpers.js';
+import { checkPrerequisites, hasArchetypeDedication, getArchetypeDedications, getMythicDedications, hasMythicDedication, sortFeats } from './helpers/feat-helpers.js';
 
 export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   constructor(actor, featType, targetLevel, currentSelection = null, options = {}) {
@@ -24,7 +24,17 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
 
     this.archetypeSearchQuery = ''; // Search by archetype/dedication name
     this.skillFilter = 'all'; // Filter skill feats by specific skill
+    this.hideArchetypeFeats = true; // Hide feats with archetype trait (for skill feats)
+    this.showSkillFeats = false; // Show skill feats in general feat picker (PF2E allows taking skill feat for general feat)
     this.sortMethod = game.settings.get('intrinsics-pf2e-level-up-wizard', 'feat-sort-method');
+
+    // Archetype filter - defaults to first archetype if actor has any, otherwise 'all'
+    this._actorDedications = getArchetypeDedications(actor);
+    this.archetypeFilter = this._actorDedications.length > 0 ? `archetype:${this._actorDedications[0]}` : 'all';
+
+    // Mythic dedication filter - defaults to first mythic dedication if actor has any, otherwise 'all'
+    this._actorMythicDedications = getMythicDedications(actor);
+    this.mythicFilter = this._actorMythicDedications.length > 0 ? `mythic:${this._actorMythicDedications[0]}` : 'all';
 
     // UI state
     this.activeFeat = null; // Feat currently shown in preview
@@ -44,7 +54,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
   static DEFAULT_OPTIONS = {
     id: 'feat-selector-{id}',
     tag: 'div',
-    classes: ['feat-selector-app'],
+    classes: ['intrinsics-level-up-wizard', 'feat-selector-app'],
     window: {
       title: 'Select Feat',
       icon: 'fa-solid fa-fist-raised',
@@ -62,6 +72,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       removeFromCompare: FeatSelectorApp.prototype._onRemoveFromCompare,
       updateSearch: FeatSelectorApp.prototype._onUpdateSearch,
       updateFilters: FeatSelectorApp.prototype._onUpdateFilters,
+      speakPreview: FeatSelectorApp.prototype._onSpeakPreview,
       confirm: FeatSelectorApp.prototype._onConfirm,
       cancel: FeatSelectorApp.prototype._onCancel
     }
@@ -137,7 +148,10 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
 
       archetypeSearchQuery: this.archetypeSearchQuery,
       skillFilter: this.skillFilter,
+      hideArchetypeFeats: this.hideArchetypeFeats,
       isSkillFeats: this.featType === 'skillFeats',
+      isGeneralFeats: this.featType === 'generalFeats',
+      showSkillFeats: this.showSkillFeats,
       availableSkills: this._getAvailableSkills(),
       sortMethod: this.sortMethod,
 
@@ -162,12 +176,124 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       // Current selection
       currentSelection: this.currentSelection,
 
+      // Archetype dedication filter options (for free archetype feats)
+      archetypeFilter: this.archetypeFilter,
+      actorDedications: this._actorDedications,
+      hasActorDedications: this._actorDedications.length > 0,
+      archetypeFilterOptions: this._getArchetypeFilterOptions(),
+
+      // Mythic dedication filter options (for mythic feats)
+      isMythicFeats: this.featType === 'mythicFeats',
+      mythicFilter: this.mythicFilter,
+      actorMythicDedications: this._actorMythicDedications,
+      hasActorMythicDedications: this._actorMythicDedications.length > 0,
+      mythicFilterOptions: this._getMythicFilterOptions(),
+
       // Kineticist Gate filtering
       isKineticist: this._isKineticist(),
       showGateFilter: this.showGateFilter,
       actorGates: this.actorGates,
       actorGatesDisplay: this.actorGates.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ') || 'None'
     };
+  }
+
+  /**
+   * Get options for the mythic dedication filter dropdown
+   */
+  _getMythicFilterOptions() {
+    const options = [];
+
+    // Add individual mythic archetype options first if actor has any dedications
+    if (this._actorMythicDedications.length > 0) {
+      options.push({ value: 'divider-my', label: '─── My Mythic Paths ───', disabled: true });
+      
+      const mythicOptions = this._actorMythicDedications.map(slug => {
+        // Convert slug to display name (e.g., "apocalypse-rider" -> "Apocalypse Rider")
+        const displayName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        return { value: `mythic:${slug}`, label: displayName };
+      }).sort((a, b) => a.label.localeCompare(b.label));
+
+      options.push(...mythicOptions);
+      options.push({ value: 'divider-other', label: '───────────────', disabled: true });
+    }
+
+    // Add general options
+    options.push({ value: 'all', label: 'All Mythic Feats' });
+    options.push({ value: 'dedicationsOnly', label: 'Dedication Feats Only' });
+
+    return options;
+  }
+
+  /**
+   * Get options for the archetype filter dropdown
+   */
+  _getArchetypeFilterOptions() {
+    const options = [];
+
+    // Add individual archetype options first if actor has any dedications
+    if (this._actorDedications.length > 0) {
+      options.push({ value: 'divider-my', label: '─── My Archetypes ───', disabled: true });
+      
+      const archetypeOptions = this._actorDedications.map(slug => {
+        // Convert slug to display name (e.g., "aldori-duelist" -> "Aldori Duelist")
+        const displayName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        return { value: `archetype:${slug}`, label: displayName };
+      }).sort((a, b) => a.label.localeCompare(b.label));
+
+      options.push(...archetypeOptions);
+      options.push({ value: 'divider-other', label: '───────────────', disabled: true });
+    }
+
+    // Add general options
+    options.push({ value: 'all', label: 'All Archetype Feats' });
+    options.push({ value: 'dedicationsOnly', label: 'Dedication Feats Only' });
+
+    return options;
+  }
+
+  /**
+   * Save the currently focused input before render
+   */
+  _saveFocusState() {
+    const element = this.element;
+    if (!element) return;
+    
+    const activeElement = element.querySelector(':focus');
+    if (activeElement) {
+      // Store the selector to find this element again after render
+      if (activeElement.classList.contains('filter-search')) {
+        this._focusedInput = { selector: '.filter-search', cursorPos: activeElement.selectionStart };
+      } else if (activeElement.classList.contains('archetype-search')) {
+        this._focusedInput = { selector: '.archetype-search', cursorPos: activeElement.selectionStart };
+      } else {
+        this._focusedInput = null;
+      }
+    }
+  }
+
+  /**
+   * Restore focus to the previously focused input after render
+   */
+  _restoreFocusState() {
+    if (!this._focusedInput) return;
+    
+    const element = this.element;
+    if (!element) return;
+    
+    const input = element.querySelector(this._focusedInput.selector);
+    if (input) {
+      // Use setTimeout to ensure the DOM is fully ready
+      setTimeout(() => {
+        input.focus();
+        // Restore cursor position if possible
+        if (this._focusedInput.cursorPos !== undefined && input.setSelectionRange) {
+          const pos = this._focusedInput.cursorPos;
+          input.setSelectionRange(pos, pos);
+        }
+      }, 0);
+    }
+    
+    this._focusedInput = null;
   }
 
   _onRender(context, options) {
@@ -202,6 +328,40 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
         skillFilterSelect.addEventListener('change', (event) => {
           this.skillFilter = event.target.value;
           this._saveScrollPosition();
+          this._saveFocusState();
+          this.render();
+        });
+      }
+
+      // Attach change listener for archetype filter dropdown
+      const archetypeFilterSelect = element.querySelector('.archetype-filter-group .filter-select');
+      if (archetypeFilterSelect) {
+        archetypeFilterSelect.addEventListener('change', (event) => {
+          this.archetypeFilter = event.target.value;
+          this._saveScrollPosition();
+          this._saveFocusState();
+          this.render();
+        });
+      }
+
+      // Attach change listener for mythic filter dropdown
+      const mythicFilterSelect = element.querySelector('.mythic-filter-group .filter-select');
+      if (mythicFilterSelect) {
+        mythicFilterSelect.addEventListener('change', (event) => {
+          this.mythicFilter = event.target.value;
+          this._saveScrollPosition();
+          this._saveFocusState();
+          this.render();
+        });
+      }
+
+      // Attach change listener for show skill feats checkbox (general feats picker)
+      const showSkillFeatsCheckbox = element.querySelector('#show-skill-feats');
+      if (showSkillFeatsCheckbox) {
+        showSkillFeatsCheckbox.addEventListener('change', (event) => {
+          this.showSkillFeats = event.target.checked;
+          this._saveScrollPosition();
+          this._saveFocusState();
           this.render();
         });
       }
@@ -224,6 +384,9 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
           }, 0);
         }
       }
+
+      // Restore focus to search input if it was focused before render
+      this._restoreFocusState();
     }
   }
 
@@ -243,6 +406,10 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
         const ancestryItem = this.actor.ancestry;
         if (!ancestryItem) return [];
         searchQueries = [ancestryItem.slug, 'ancestry'];
+        // Special case: Kholo ancestry (formerly Gnoll) - include Gnoll trait for legacy feats
+        if (ancestryItem.name === 'Kholo' || ancestryItem.slug === 'kholo') {
+          searchQueries.push('gnoll');
+        }
         break;
 
       case 'skillFeats':
@@ -250,7 +417,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
         break;
 
       case 'generalFeats':
-        searchQueries = ['general'];
+        searchQueries = this.showSkillFeats ? ['general', 'skill'] : ['general'];
         break;
 
       case 'freeArchetypeFeats':
@@ -278,11 +445,12 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
     const existingFeats = this.actor.itemTypes.feat || [];
 
     // Map feat type to PF2e category
+    // When showSkillFeats is enabled for general feats, use null to fetch by trait instead
     const categoryMap = {
       'classFeats': 'class',
       'ancestryFeats': 'ancestry',
       'skillFeats': 'skill',
-      'generalFeats': 'general',
+      'generalFeats': this.showSkillFeats ? null : 'general', // Use trait filtering when showing skill feats too
       'freeArchetypeFeats': null, // Archetypes are filtered by trait, not category
       'mythicFeats': null, // Mythic filtered by trait
       'destinyFeats': null, // Destiny filtered by trait
@@ -345,16 +513,93 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       return false;
     });
 
+    // Archetype/Dedication filter (for free archetype feats)
+    if (this.featType === 'freeArchetypeFeats' && this.archetypeFilter !== 'all') {
+      if (this.archetypeFilter === 'dedicationsOnly') {
+        // Show only dedication feats
+        filtered = filtered.filter(feat => {
+          const traits = feat.system.traits?.value || [];
+          return traits.includes('dedication');
+        });
+      } else if (this.archetypeFilter.startsWith('archetype:')) {
+        // Show feats from a specific archetype (requires that dedication)
+        const targetArchetype = this.archetypeFilter.replace('archetype:', '');
+        const targetDedicationName = targetArchetype.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        
+        filtered = filtered.filter(feat => {
+          // Check if this is the dedication feat itself
+          const featSlug = feat.slug || feat.name.toLowerCase().replace(/\s+/g, '-');
+          if (featSlug === `${targetArchetype}-dedication`) return true;
+          
+          // Check prerequisites for "X Dedication" requirement
+          const prerequisites = feat.system.prerequisites?.value || [];
+          return prerequisites.some(prereq => {
+            const prereqText = (prereq.value || prereq || '').toLowerCase();
+            // Match variations like "Aldori Duelist Dedication" or "aldori duelist dedication"
+            return prereqText.includes(targetDedicationName.toLowerCase() + ' dedication') ||
+                   prereqText.includes(targetArchetype + '-dedication') ||
+                   prereqText.includes(targetArchetype.replace(/-/g, ' ') + ' dedication');
+          });
+        });
+      }
+    }
+
+    // Mythic Dedication filter (for mythic feats)
+    if (this.featType === 'mythicFeats' && this.mythicFilter !== 'all') {
+      if (this.mythicFilter === 'dedicationsOnly') {
+        // Show only dedication feats
+        filtered = filtered.filter(feat => {
+          const traits = feat.system.traits?.value || [];
+          return traits.includes('dedication');
+        });
+      } else if (this.mythicFilter.startsWith('mythic:')) {
+        // Show feats from a specific mythic path (requires that dedication)
+        const targetMythic = this.mythicFilter.replace('mythic:', '');
+        const targetDedicationName = targetMythic.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        
+        filtered = filtered.filter(feat => {
+          // Check if this is the dedication feat itself
+          const featSlug = feat.slug || feat.name.toLowerCase().replace(/\s+/g, '-');
+          if (featSlug === `${targetMythic}-dedication`) return true;
+          
+          // Check prerequisites for "X Dedication" requirement
+          const prerequisites = feat.system.prerequisites?.value || [];
+          return prerequisites.some(prereq => {
+            const prereqText = (prereq.value || prereq || '').toLowerCase();
+            // Match variations like "Apocalypse Rider Dedication" or "apocalypse rider dedication"
+            return prereqText.includes(targetDedicationName.toLowerCase() + ' dedication') ||
+                   prereqText.includes(targetMythic + '-dedication') ||
+                   prereqText.includes(targetMythic.replace(/-/g, ' ') + ' dedication');
+          });
+        });
+      }
+    }
+
     // Dedication search (for free archetype feats) - filter by prerequisites containing "{search} dedication"
     if (this.archetypeSearchQuery && this.featType === 'freeArchetypeFeats') {
       const dedicationQuery = this.archetypeSearchQuery.toLowerCase();
       filtered = filtered.filter(feat => {
+        // Also match on feat name and archetype name
+        const featNameMatch = feat.name.toLowerCase().includes(dedicationQuery);
+        const archetypeName = this._extractArchetypeName(feat);
+        const archetypeMatch = archetypeName && archetypeName.toLowerCase().includes(dedicationQuery);
+        
         const prerequisites = feat.system.prerequisites?.value || [];
         // Check if any prerequisite contains both the search term AND "dedication"
-        return prerequisites.some(prereq => {
+        const prereqMatch = prerequisites.some(prereq => {
           const prereqText = (prereq.value || prereq || '').toLowerCase();
           return prereqText.includes(dedicationQuery) && prereqText.includes('dedication');
         });
+        
+        return featNameMatch || archetypeMatch || prereqMatch;
+      });
+    }
+
+    // Hide archetype feats filter (for skill feats)
+    if (this.hideArchetypeFeats && this.featType === 'skillFeats') {
+      filtered = filtered.filter(feat => {
+        const traits = feat.system.traits?.value || [];
+        return !traits.includes('archetype');
       });
     }
 
@@ -417,6 +662,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       return {
         ...feat,
         uuid: feat.uuid, // Explicitly include uuid since it's a getter
+        isSelected: feat.uuid === this.currentSelection, // For template selected state
         prerequisitesMet: prereqCheck.meets,
         prerequisitesText: prerequisitesText, // Formatted prerequisites string
         prerequisitesClass: prereqClass, // CSS class for color coding
@@ -431,7 +677,10 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       };
     });
 
-    return enrichedFeats;
+    // Apply sorting
+    const sortedFeats = sortFeats(enrichedFeats, this.sortMethod);
+
+    return sortedFeats;
   }
 
   /**
@@ -768,10 +1017,11 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
   async _onUpdateSearch(event, target) {
     this.searchQuery = target.value;
 
-    // Debounce search
+    // Debounce search - use _updateFeatListOnly to preserve input focus
     clearTimeout(this._searchTimeout);
     this._searchTimeout = setTimeout(async () => {
-      await this.render();
+      this._saveScrollPosition();
+      await this._updateFeatListOnly();
     }, 300);
   }
 
@@ -806,10 +1056,14 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       case 'skillFilter':
         this.skillFilter = target.value;
         break;
+      case 'hideArchetypeFeats':
+        this.hideArchetypeFeats = target.checked;
+        break;
     }
 
-    // Save scroll position before render
+    // Save scroll position and focus state before render
     this._saveScrollPosition();
+    this._saveFocusState();
 
     await this.render();
   }
@@ -865,13 +1119,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
         html += `<div class="archetype-section">`;
         html += `<div class="archetype-header">`;
         html += `<span class="archetype-name">${archetype.name}</span>`;
-        html += `<span class="archetype-dedication ${archetype.hasDedication ? 'has-dedication' : 'no-dedication'}">`;
-        if (archetype.hasDedication) {
-          html += `<i class="fas fa-check"></i> Dedication Taken`;
-        } else {
-          html += `<i class="fas fa-exclamation-triangle"></i> No Dedication`;
-        }
-        html += `</span></div>`;
+        html += `</div>`;
 
         for (const feat of archetype.feats) {
           html += this._renderFeatCard(feat);
@@ -948,16 +1196,24 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       html += `</div>`;
     }
 
-    // Needs dedication warning
-    if (feat.needsDedication) {
-      html += `<div class="feat-card-prerequisites unmet">`;
-      html += `<i class="fas fa-exclamation-triangle"></i>`;
-      html += `<span>Requires dedication feat</span>`;
-      html += `</div>`;
-    }
-
     html += `</div>`;
     return html;
+  }
+
+  async _onSpeakPreview(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Find the preview panel to get the TTS text
+    const previewPanel = this.element.querySelector('.feat-preview-panel[data-tts]');
+    if (!previewPanel) return;
+
+    const text = previewPanel.getAttribute('data-tts');
+    if (!text || text.trim() === '.' || text.trim() === '') return;
+
+    // Import and use TTSHelper
+    const { TTSHelper } = await import('./helpers/tts-helper.js');
+    TTSHelper.toggle(text, target);
   }
 
   async _onConfirm(event, target) {

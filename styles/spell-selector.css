@@ -58,6 +58,9 @@
   color: var(--iluw-text-primary);
   font-size: 14px;
   cursor: pointer;
+  height: auto;
+  min-height: 2.2em;
+  line-height: 1.4;
 }
 
 .spell-selector-app .tradition-selector select:hover {
@@ -149,6 +152,10 @@
 
 .spell-selector-app .filter-select {
   min-width: 120px;
+  width: auto;
+  height: auto;
+  min-height: 2.2em;
+  line-height: 1.4;
 }
 
 .spell-selector-app .filter-search {

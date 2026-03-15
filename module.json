@@ -21,7 +21,8 @@
     "styles/level-up-wizard.css",
     "styles/feat-selector.css",
     "styles/spell-selector.css",
-    "styles/shared.css"
+    "styles/shared.css",
+    "styles/accessibility.css"
   ],
   "languages": [
     {
@@ -38,6 +39,10 @@
         "compatibility": {
           "minimum": "6.0.0"
         }
+      },
+      {
+        "id": "sf2e",
+        "type": "system"
       }
     ],
     "recommends": [

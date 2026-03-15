@@ -1,5 +1,6 @@
 // Data Provider - Handles compendium data caching and filtering
 import { MODULE_NAME, debugLog } from './module.js';
+import { getPackId, getSystemId, isPF2E } from './system-config.js';
 
 /**
  * DataProvider class - Caches and provides compendium data
@@ -90,15 +91,27 @@ export class DataProvider {
     const loadPromise = (async () => {
       let allFeats = [];
 
-      // Load from pf2e.feats-srd
-      const defaultCompendium = game.packs.get('pf2e.feats-srd');
+      // Load from system feats compendium (pf2e.feats-srd or sf2e.feats)
+      const defaultPackId = getPackId('feats-srd');
+      const defaultCompendium = game.packs.get(defaultPackId);
       if (defaultCompendium) {
-        debugLog('DataProvider', 'Loading feats from pf2e.feats-srd...');
+        debugLog('DataProvider', `Loading feats from ${defaultPackId}...`);
         const defaultFeats = await defaultCompendium.getDocuments();
         allFeats = allFeats.concat(defaultFeats.filter(f => f.type === 'feat'));
+      } else {
+        // Fallback: search by label
+        const fallbackPack = game.packs.find(p =>
+          p.metadata.label.toLowerCase() === 'feats' &&
+          p.metadata.packageName === getSystemId()
+        );
+        if (fallbackPack) {
+          debugLog('DataProvider', `Loading feats from fallback pack ${fallbackPack.collection}...`);
+          const fallbackFeats = await fallbackPack.getDocuments();
+          allFeats = allFeats.concat(fallbackFeats.filter(f => f.type === 'feat'));
+        }
       }
 
-      // Load playtest class feats
+      // Load playtest class feats (PF2E)
       const playtestCompendium = game.packs.get('pf2e-playtest-data.impossible-playtest-class-feats');
       if (playtestCompendium) {
         debugLog('DataProvider', 'Loading feats from pf2e-playtest-data.impossible-playtest-class-feats...');
@@ -108,6 +121,39 @@ export class DataProvider {
           debugLog('DataProvider', `Loaded ${playtestFeats.filter(f => f.type === 'feat').length} playtest feats`);
         } catch (err) {
           console.warn('DataProvider | Failed to load playtest feats:', err);
+        }
+      }
+
+      // Load RR playtest class feats (PF2E)
+      const rrPlaytestCompendium = game.packs.get('pf2e-playtest-data.rr-playtest-class-features');
+      if (rrPlaytestCompendium) {
+        debugLog('DataProvider', 'Loading feats from pf2e-playtest-data.rr-playtest-class-features...');
+        try {
+          const rrFeats = await rrPlaytestCompendium.getDocuments();
+          allFeats = allFeats.concat(rrFeats.filter(f => f.type === 'feat'));
+          debugLog('DataProvider', `Loaded ${rrFeats.filter(f => f.type === 'feat').length} RR playtest feats`);
+        } catch (err) {
+          console.warn('DataProvider | Failed to load RR playtest feats:', err);
+        }
+      }
+
+      // Load SF2E playtest feats (starfinder-field-test-for-pf2e module)
+      let sf2eFeatsPack = game.packs.get('starfinder-field-test-for-pf2e.sf2e-feats');
+      if (!sf2eFeatsPack) {
+        // Fallback: search for SF2E feats pack by module name
+        sf2eFeatsPack = game.packs.find(p =>
+          p.metadata.packageName === 'starfinder-field-test-for-pf2e' &&
+          (p.metadata.name === 'sf2e-feats' || p.metadata.label.toLowerCase().includes('feat'))
+        );
+      }
+      if (sf2eFeatsPack) {
+        debugLog('DataProvider', `Loading SF2E playtest feats from ${sf2eFeatsPack.collection}...`);
+        try {
+          const sf2eFeats = await sf2eFeatsPack.getDocuments();
+          allFeats = allFeats.concat(sf2eFeats.filter(f => f.type === 'feat'));
+          debugLog('DataProvider', `Loaded ${sf2eFeats.filter(f => f.type === 'feat').length} SF2E playtest feats`);
+        } catch (err) {
+          console.warn('DataProvider | Failed to load SF2E playtest feats:', err);
         }
       }
 
@@ -223,12 +269,24 @@ export class DataProvider {
     const loadPromise = (async () => {
       let allSpells = [];
 
-      // Load from pf2e.spells-srd
-      const defaultCompendium = game.packs.get('pf2e.spells-srd');
+      // Load from system spells compendium (pf2e.spells-srd or sf2e.spells)
+      const defaultPackId = getPackId('spells-srd');
+      const defaultCompendium = game.packs.get(defaultPackId);
       if (defaultCompendium) {
-        debugLog('DataProvider', 'Loading spells from pf2e.spells-srd...');
+        debugLog('DataProvider', `Loading spells from ${defaultPackId}...`);
         const defaultSpells = await defaultCompendium.getDocuments();
         allSpells = allSpells.concat(defaultSpells.filter(s => s.type === 'spell'));
+      } else {
+        // Fallback: search by label
+        const fallbackPack = game.packs.find(p =>
+          p.metadata.label.toLowerCase() === 'spells' &&
+          p.metadata.packageName === getSystemId()
+        );
+        if (fallbackPack) {
+          debugLog('DataProvider', `Loading spells from fallback pack ${fallbackPack.collection}...`);
+          const fallbackSpells = await fallbackPack.getDocuments();
+          allSpells = allSpells.concat(fallbackSpells.filter(s => s.type === 'spell'));
+        }
       }
 
       // Load from additional compendiums
@@ -290,14 +348,89 @@ export class DataProvider {
     }
 
     const loadPromise = (async () => {
-      const compendium = game.packs.get('pf2e.classes');
+      const classPackId = getPackId('classes');
+      let compendium = game.packs.get(classPackId);
       if (!compendium) {
-        console.error(`${MODULE_NAME} | Classes compendium not found`);
+        // Fallback: search by label
+        compendium = game.packs.find(p =>
+          p.metadata.label.toLowerCase() === 'classes' &&
+          p.metadata.packageName === getSystemId()
+        );
+      }
+      if (!compendium) {
+        console.error(`${MODULE_NAME} | Classes compendium not found (tried ${classPackId})`);
         return [];
       }
 
-      debugLog('DataProvider', 'Loading classes from pf2e.classes...');
+      debugLog('DataProvider', `Loading classes from ${compendium.collection}...`);
       const classes = await compendium.getDocuments();
+
+      // Load playtest classes (PF2E)
+      const playtestPack = game.packs.get('pf2e-playtest-data.impossible-playtest-classes');
+      if (playtestPack) {
+        debugLog('DataProvider', 'Loading PF2E playtest classes...');
+        const playtestDocs = await playtestPack.getDocuments();
+        const wrappedPlaytest = playtestDocs.map(doc => {
+          if (!doc.slug || doc.slug === null) {
+            const generatedSlug = doc.name.toLowerCase().replace(/\s+/g, '-');
+            return new Proxy(doc, {
+              get(target, prop) {
+                if (prop === 'slug') return generatedSlug;
+                return target[prop];
+              }
+            });
+          }
+          return doc;
+        });
+        classes.push(...wrappedPlaytest);
+        debugLog('DataProvider', `Loaded ${playtestDocs.length} PF2E playtest classes`);
+      }
+
+      // Load RR playtest classes (PF2E)
+      const rrPlaytestPack = game.packs.get('pf2e-playtest-data.rr-playtest-classes');
+      if (rrPlaytestPack) {
+        debugLog('DataProvider', 'Loading RR playtest classes...');
+        const rrPlaytestDocs = await rrPlaytestPack.getDocuments();
+        const wrappedRRPlaytest = rrPlaytestDocs.map(doc => {
+          if (!doc.slug || doc.slug === null) {
+            const generatedSlug = doc.name.toLowerCase().replace(/\s+/g, '-');
+            return new Proxy(doc, {
+              get(target, prop) {
+                if (prop === 'slug') return generatedSlug;
+                return target[prop];
+              }
+            });
+          }
+          return doc;
+        });
+        classes.push(...wrappedRRPlaytest);
+        debugLog('DataProvider', `Loaded ${rrPlaytestDocs.length} RR playtest classes`);
+      }
+
+      // Load SF2E playtest classes (starfinder-field-test-for-pf2e module)
+      const sf2ePlaytestPack = game.packs.get('starfinder-field-test-for-pf2e.sf2e-classes');
+      if (sf2ePlaytestPack) {
+        debugLog('DataProvider', 'Loading SF2E playtest classes...');
+        const sf2ePlaytestDocs = await sf2ePlaytestPack.getDocuments();
+        const wrappedSF2EPlaytest = sf2ePlaytestDocs.map(doc => {
+          if (!doc.slug || doc.slug === null) {
+            const generatedSlug = doc.name.toLowerCase().replace(/\s+/g, '-');
+            return new Proxy(doc, {
+              get(target, prop) {
+                if (prop === 'slug') return generatedSlug;
+                return target[prop];
+              }
+            });
+          }
+          return doc;
+        });
+        // Only add classes that aren't already loaded
+        const existingSlugs = new Set(classes.map(d => d.slug));
+        const newClasses = wrappedSF2EPlaytest.filter(d => !existingSlugs.has(d.slug));
+        classes.push(...newClasses);
+        debugLog('DataProvider', `Loaded ${newClasses.length} SF2E playtest classes`);
+      }
+
       this.cache.classes = classes;
       return classes;
     })();
@@ -350,13 +483,20 @@ export class DataProvider {
     }
 
     const loadPromise = (async () => {
-      const compendium = game.packs.get('pf2e.ancestries');
+      const ancestryPackId = getPackId('ancestries');
+      let compendium = game.packs.get(ancestryPackId);
       if (!compendium) {
-        console.error(`${MODULE_NAME} | Ancestries compendium not found`);
+        compendium = game.packs.find(p =>
+          p.metadata.label.toLowerCase() === 'ancestries' &&
+          p.metadata.packageName === getSystemId()
+        );
+      }
+      if (!compendium) {
+        console.error(`${MODULE_NAME} | Ancestries compendium not found (tried ${ancestryPackId})`);
         return [];
       }
 
-      debugLog('DataProvider', 'Loading ancestries from pf2e.ancestries...');
+      debugLog('DataProvider', `Loading ancestries from ${compendium.collection}...`);
       const ancestries = await compendium.getDocuments();
       this.cache.ancestries = ancestries;
       return ancestries;

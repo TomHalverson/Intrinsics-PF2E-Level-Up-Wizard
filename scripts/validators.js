@@ -5,6 +5,14 @@ import * as ClassFeaturesHelpers from './helpers/class-features-helpers.js';
 import * as VariantRulesHelpers from './helpers/variant-rules-helpers.js';
 
 /**
+ * Get normalized class slug from class item (handles playtest null slugs)
+ */
+function getClassSlug(classItem) {
+  if (!classItem) return null;
+  return classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+}
+
+/**
  * Validate choices for a specific level
  * @param {Actor} actor - The actor
  * @param {number} level - Level to validate
@@ -96,7 +104,7 @@ export function validateLevelChoices(actor, level, choices) {
 
       // Auto-learning classes don't need to select spells
       const autoLearns = ['cleric', 'druid', 'animist'].includes(
-        actor.items.find(i => i.type === 'class')?.slug
+        getClassSlug(actor.items.find(i => i.type === 'class'))
       );
 
       if (!autoLearns && spellsForRank.length === 0) {

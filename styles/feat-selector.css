@@ -58,6 +58,10 @@
 
 .feat-selector-app .filter-select {
   min-width: 120px;
+  width: auto;
+  height: auto;
+  min-height: 2.2em;
+  line-height: 1.4;
 }
 
 .feat-selector-app .filter-checkbox {
@@ -82,6 +86,50 @@
 /* ========================================================================== */
 /* ARCHETYPE SEARCH FILTER */
 /* ========================================================================== */
+
+.feat-selector-app .archetype-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(155, 89, 182, 0.1);
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  border-radius: 6px;
+}
+
+.feat-selector-app .archetype-filter-group .filter-label {
+  color: var(--iluw-accent-purple);
+  white-space: nowrap;
+}
+
+.feat-selector-app .archetype-filter-group .filter-label i {
+  margin-right: 4px;
+}
+
+.feat-selector-app .archetype-filter-group .filter-select {
+  min-width: 180px;
+  padding: 6px 10px;
+  background: var(--iluw-bg-primary);
+  border: 1px solid var(--iluw-border-color);
+  border-radius: 4px;
+  color: var(--iluw-text-primary);
+  font-size: 13px;
+  height: auto;
+  min-height: 2.2em;
+  line-height: 1.4;
+}
+
+.feat-selector-app .archetype-filter-group .filter-select:focus {
+  outline: none;
+  border-color: var(--iluw-accent-purple);
+  box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.2);
+}
+
+.feat-selector-app .archetype-filter-group .filter-select option[disabled] {
+  color: var(--iluw-text-muted);
+  font-style: italic;
+  font-size: 11px;
+}
 
 .feat-selector-app .archetype-search-group {
   display: flex;
@@ -152,6 +200,9 @@
   border-radius: 4px;
   color: var(--iluw-text-primary);
   font-size: 13px;
+  height: auto;
+  min-height: 2.2em;
+  line-height: 1.4;
 }
 
 .feat-selector-app .skill-filter-group .filter-select:focus {

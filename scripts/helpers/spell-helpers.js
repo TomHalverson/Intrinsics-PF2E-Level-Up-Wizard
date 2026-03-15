@@ -74,7 +74,12 @@ export function getSpellTradition(actor) {
     'summoner': 'arcane',
     'psychic': 'occult',
     'animist': 'divine',
-    'necromancer': 'occult'
+    'necromancer': 'occult',
+    // SF2E classes
+    'mystic': 'divine',
+    'precog': 'occult',
+    'technomancer': 'arcane',
+    'witchwarper': 'occult'
   };
 
   const tradition = traditions[getClassSlug(classItem)] || null;
@@ -236,7 +241,12 @@ export function getSpellcastingType(actor) {
     'summoner': 'spontaneous',
     'psychic': 'spontaneous',
     'animist': 'prepared',
-    'necromancer': 'prepared'
+    'necromancer': 'prepared',
+    // SF2E classes
+    'mystic': 'prepared',
+    'precog': 'spontaneous',
+    'technomancer': 'prepared',
+    'witchwarper': 'spontaneous'
   };
 
   return types[getClassSlug(classItem)] || 'prepared';
@@ -277,7 +287,12 @@ export function getCantripCount(actor) {
     'summoner': 5,
     'psychic': 5,
     'animist': 5,
-    'necromancer': 5
+    'necromancer': 5,
+    // SF2E classes
+    'mystic': 5,
+    'precog': 5,
+    'technomancer': 5,
+    'witchwarper': 5
   };
 
   return cantripCounts[getClassSlug(classItem)] || 5;
@@ -306,7 +321,12 @@ export function getRank1SpellCount(actor) {
     'magus': 2,
     'summoner': 2,
     'psychic': 2,
-    'necromancer': 4
+    'necromancer': 4,
+    // SF2E classes
+    'mystic': 2,
+    'precog': 2,
+    'technomancer': 3,
+    'witchwarper': 2
   };
 
   return spellCounts[getClassSlug(classItem)] || 2;
@@ -521,7 +541,8 @@ export function getHighestSpellRank(actor, level = null) {
   if (!classItem) return 0;
 
   // Full casters get new spell ranks every odd level
-  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch'];
+  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch',
+                       'mystic', 'precog', 'technomancer', 'witchwarper'];
   const classSlug = getClassSlug(classItem);
 
   if (fullCasters.includes(classSlug)) {
@@ -543,7 +564,8 @@ export function getNewSpellRankAtLevel(actor, level) {
   const classItem = actor.items.find(i => i.type === 'class');
   if (!classItem) return null;
 
-  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
+  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer',
+                       'mystic', 'precog', 'technomancer', 'witchwarper'];
   const partialCasters = ['magus', 'summoner'];
   const classSlug = getClassSlug(classItem);
 

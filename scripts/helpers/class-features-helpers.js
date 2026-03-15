@@ -196,7 +196,8 @@ export function getNewSpellRankAtLevel(actor, targetLevel) {
     return null;
   }
 
-  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
+  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer',
+                       'mystic', 'precog', 'technomancer', 'witchwarper'];
   const partialCasters = ['magus', 'summoner'];
   const classSlug = getClassSlug(classItem);
 
@@ -243,7 +244,8 @@ export function getSpellSlotsForRank(actor, level, rank) {
   // Level 5: 3 rank-1, 3 rank-2, 2 rank-3
   // etc.
 
-  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer'];
+  const fullCasters = ['wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle', 'witch', 'psychic', 'animist', 'necromancer',
+                       'mystic', 'precog', 'technomancer', 'witchwarper'];
   const classSlug = getClassSlug(classItem);
 
   if (fullCasters.includes(classSlug)) {

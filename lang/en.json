@@ -32,6 +32,30 @@
       "debug-mode": {
         "name": "Debug Mode",
         "hint": "Enable debug logging to console"
+      },
+      "dyslexia-friendly-font": {
+        "name": "Dyslexia-Friendly Font",
+        "hint": "Use OpenDyslexic font which is designed to help readers with dyslexia"
+      },
+      "text-to-speech": {
+        "name": "Enable Text-to-Speech",
+        "hint": "Add speaker buttons to read feat and spell descriptions aloud"
+      },
+      "tts-voice": {
+        "name": "Text-to-Speech Voice",
+        "hint": "Select the voice to use for text-to-speech (browser dependent)"
+      },
+      "tts-rate": {
+        "name": "Speech Rate",
+        "hint": "Adjust how fast the text is read aloud (0.5 = slow, 1 = normal, 2 = fast)"
+      },
+      "enhanced-readability": {
+        "name": "Enhanced Readability",
+        "hint": "Increase text size, line spacing, and letter spacing for easier reading"
+      },
+      "high-contrast": {
+        "name": "High Contrast Mode",
+        "hint": "Use higher contrast colors to make text easier to read"
       }
     },
 
@@ -56,7 +80,9 @@
       "submit": "Submit",
       "close": "Close",
       "compare": "Compare",
-      "view-details": "View Details"
+      "view-details": "View Details",
+      "read-aloud": "Read Aloud",
+      "stop-reading": "Stop Reading"
     },
 
     "labels": {

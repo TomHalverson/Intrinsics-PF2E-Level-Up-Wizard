@@ -78,15 +78,49 @@
 
     {{! Archetype Filter (for free archetype feats) }}
     {{#if (eq featType 'freeArchetypeFeats')}}
+    <div class="filter-group archetype-filter-group">
+      <label class="filter-label">
+        <i class="fas fa-scroll"></i>
+        Archetype
+      </label>
+      <select class="filter-select">
+        {{#each archetypeFilterOptions as |option|}}
+        {{#if option.disabled}}
+        <option value="{{option.value}}" disabled>{{option.label}}</option>
+        {{else}}
+        <option value="{{option.value}}" {{#if (eq ../archetypeFilter option.value)}}selected{{/if}}>{{option.label}}</option>
+        {{/if}}
+        {{/each}}
+      </select>
+    </div>
     <div class="filter-group archetype-search-group">
       <label class="filter-label">
-        <i class="fas fa-book"></i>
-        Dedication
+        <i class="fas fa-search"></i>
+        Search
       </label>
       <input type="text"
              class="archetype-search"
-             placeholder="Filter by dedication (e.g., fighter)..."
+             placeholder="Search archetypes..."
              value="{{archetypeSearchQuery}}">
+    </div>
+    {{/if}}
+
+    {{! Mythic Dedication Filter (for mythic feats) }}
+    {{#if isMythicFeats}}
+    <div class="filter-group mythic-filter-group">
+      <label class="filter-label">
+        <i class="fas fa-star"></i>
+        Mythic Path
+      </label>
+      <select class="filter-select">
+        {{#each mythicFilterOptions as |option|}}
+        {{#if option.disabled}}
+        <option value="{{option.value}}" disabled>{{option.label}}</option>
+        {{else}}
+        <option value="{{option.value}}" {{#if (eq ../mythicFilter option.value)}}selected{{/if}}>{{option.label}}</option>
+        {{/if}}
+        {{/each}}
+      </select>
     </div>
     {{/if}}
 
@@ -103,6 +137,28 @@
         <option value="{{skill.key}}" {{#if (eq ../skillFilter skill.key)}}selected{{/if}}>{{skill.name}}</option>
         {{/each}}
       </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="hide-archetype-feats"
+               {{#if hideArchetypeFeats}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="hideArchetypeFeats">
+        <label for="hide-archetype-feats">Hide Archetype Feats</label>
+      </div>
+    </div>
+    {{/if}}
+
+    {{! Show Skill Feats option (for general feats - PF2E allows taking skill feat for general feat) }}
+    {{#if isGeneralFeats}}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-skill-feats"
+               {{#if showSkillFeats}}checked{{/if}}>
+        <label for="show-skill-feats">Show Skill Feats</label>
+      </div>
     </div>
     {{/if}}
 
@@ -133,13 +189,13 @@
     <div class="filter-group">
       <label class="filter-label">{{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-by'}}</label>
       <select class="filter-select" data-action="updateFilters" data-filter="sort">
-        <option value="level-desc" {{#if (eq sortMethod 'level-desc')}}selected{{/if}}>
+        <option value="LEVEL_DESC" {{#if (eq sortMethod 'LEVEL_DESC')}}selected{{/if}}>
           {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-level-desc'}}
         </option>
-        <option value="level-asc" {{#if (eq sortMethod 'level-asc')}}selected{{/if}}>
+        <option value="LEVEL_ASC" {{#if (eq sortMethod 'LEVEL_ASC')}}selected{{/if}}>
           {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-level-asc'}}
         </option>
-        <option value="alphabetical" {{#if (eq sortMethod 'alphabetical')}}selected{{/if}}>
+        <option value="ALPHABETICAL" {{#if (eq sortMethod 'ALPHABETICAL')}}selected{{/if}}>
           {{localize 'intrinsics-pf2e-level-up-wizard.filters.sort-alphabetical'}}
         </option>
       </select>
@@ -216,13 +272,6 @@
       <div class="archetype-section">
         <div class="archetype-header">
           <span class="archetype-name">{{archetype.name}}</span>
-          <span class="archetype-dedication {{#if archetype.hasDedication}}has-dedication{{else}}no-dedication{{/if}}">
-            {{#if archetype.hasDedication}}
-              <i class="fas fa-check"></i> Dedication Taken
-            {{else}}
-              <i class="fas fa-exclamation-triangle"></i> No Dedication
-            {{/if}}
-          </span>
         </div>
 
         {{#each archetype.feats as |feat|}}
@@ -248,11 +297,14 @@
   </div>
 
   <div class="feat-preview-column">
-    <div class="feat-preview-panel">
+    <div class="feat-preview-panel" data-tts="{{activeFeatDetails.name}}. {{activeFeatDetails.description}}">
       {{#if activeFeatDetails}}
       {{! Feat selected - show preview }}
-      <div class="feat-preview-header">
+      <div class="feat-preview-header header-with-tts">
         <h3 class="feat-preview-title">{{activeFeatDetails.name}}</h3>
+        <button type="button" class="tts-button" data-action="speakPreview" aria-label="Read aloud" title="Read aloud">
+          <i class="fas fa-volume-up"></i>
+        </button>
         <div class="feat-preview-meta">
           <span><strong>Level:</strong> {{activeFeatDetails.level}}</span>
           <span><strong>Type:</strong> {{activeFeatDetails.type}}</span>
@@ -371,7 +423,7 @@
 
 {{! Feat Card Partial }}
 {{#*inline "featCard"}}
-<div class="feat-card {{#if (eq feat.uuid ../activeFeat)}}active{{/if}} {{#if (eq feat.uuid ../currentSelection)}}selected{{/if}}"
+<div class="feat-card {{#if (eq feat.uuid ../activeFeat)}}active{{/if}} {{#if feat.isSelected}}selected{{/if}}"
      data-action="previewFeat"
      data-feat-uuid="{{feat.uuid}}">
 
@@ -415,13 +467,6 @@
   <div class="feat-card-prerequisites {{feat.prerequisitesClass}}">
     <i class="fas fa-list-check"></i>
     <span>{{feat.prerequisitesText}}</span>
-  </div>
-  {{/if}}
-
-  {{#if feat.needsDedication}}
-  <div class="feat-card-prerequisites unmet">
-    <i class="fas fa-exclamation-triangle"></i>
-    <span>Requires dedication feat</span>
   </div>
   {{/if}}
 </div>

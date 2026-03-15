@@ -213,11 +213,14 @@
     </div>
 
     <div class="spell-preview-column">
-      <div class="spell-preview-panel">
+      <div class="spell-preview-panel" data-tts="{{activeSpellDetails.name}}. {{activeSpellDetails.description}}">
         {{#if activeSpellDetails}}
         {{! Spell selected - show preview }}
-        <div class="spell-preview-header">
+        <div class="spell-preview-header header-with-tts">
           <h3 class="spell-preview-title">{{activeSpellDetails.name}}</h3>
+          <button type="button" class="tts-button" data-action="speakPreview" aria-label="Read aloud" title="Read aloud">
+            <i class="fas fa-volume-up"></i>
+          </button>
           <div class="spell-preview-meta">
             <span><strong>Rank:</strong> {{#if (eq activeSpellDetails.rank 0)}}Cantrip{{else}}{{activeSpellDetails.rank}}{{/if}}</span>
             <span><strong>Tradition:</strong> {{join activeSpellDetails.traditions ', '}}</span>

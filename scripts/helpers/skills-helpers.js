@@ -1,6 +1,7 @@
 // Skills Helpers - Skill proficiency logic and skill increases
 import { MODULE_NAME, debugLog } from '../module.js';
 import * as VariantRulesHelpers from './variant-rules-helpers.js';
+import { getLocKeyPrefix } from '../system-config.js';
 
 // Skill proficiency ranks
 export const SKILL_PROFICIENCY_RANKS = {
@@ -22,9 +23,10 @@ export const SKILLS = [
  * Get available skills for increase at level
  * @param {Actor} actor - The actor
  * @param {number} targetLevel - Target level
+ * @param {Object} plannedSkillIncreases - Optional object mapping skill keys to number of planned increases from earlier levels
  * @returns {Array} Array of skill objects { key, name, currentRank, canIncrease }
  */
-export function getSkillsForLevel(actor, targetLevel) {
+export function getSkillsForLevel(actor, targetLevel, plannedSkillIncreases = {}) {
   const skills = [];
 
   for (const skillKey of SKILLS) {
@@ -32,16 +34,24 @@ export function getSkillsForLevel(actor, targetLevel) {
 
     if (!skill) continue;
 
-    const currentRank = skill.rank || 0;
-    const canIncrease = currentRank < SKILL_PROFICIENCY_RANKS.LEGENDARY;
+    // Base rank from actor's current state
+    const baseRank = skill.rank || 0;
+    
+    // Add any planned increases from earlier levels in the build plan
+    const plannedIncreases = plannedSkillIncreases[skillKey] || 0;
+    const effectiveRank = Math.min(baseRank + plannedIncreases, SKILL_PROFICIENCY_RANKS.LEGENDARY);
+    
+    const canIncrease = effectiveRank < SKILL_PROFICIENCY_RANKS.LEGENDARY;
 
     skills.push({
       key: skillKey,
       name: getSkillTranslation(skillKey),
-      currentRank,
-      currentRankName: getRankName(currentRank),
-      nextRank: currentRank + 1,
-      nextRankName: getRankName(currentRank + 1),
+      currentRank: effectiveRank,
+      baseRank: baseRank,
+      plannedIncreases: plannedIncreases,
+      currentRankName: getRankName(effectiveRank),
+      nextRank: effectiveRank + 1,
+      nextRankName: getRankName(effectiveRank + 1),
       canIncrease
     });
   }
@@ -58,11 +68,12 @@ export function getSkillsForLevel(actor, targetLevel) {
  * @returns {string} Translated skill name
  */
 export function getSkillTranslation(skillKey) {
-  // Try to get translation from game
-  const translation = game.i18n.localize(`PF2E.Skill${capitalize(skillKey)}`);
+  // Try to get translation from game using system-appropriate prefix
+  const prefix = getLocKeyPrefix();
+  const translation = game.i18n.localize(`${prefix}.Skill${capitalize(skillKey)}`);
 
   // If translation not found, use capitalized key
-  if (translation.startsWith('PF2E.')) {
+  if (translation.startsWith(`${prefix}.`)) {
     return capitalize(skillKey);
   }
 

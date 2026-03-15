@@ -1,0 +1,452 @@
+/* Intrinsics Level Up Wizard - Accessibility Styles */
+/* Supports: Dyslexia-friendly fonts, enhanced readability, high contrast, TTS */
+
+/* ============================================================================ */
+/* OPENDYSLEXIC FONT IMPORT */
+/* ============================================================================ */
+
+/* OpenDyslexic is a free, open-source font designed to increase readability for readers with dyslexia */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Italic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ============================================================================ */
+/* DYSLEXIA-FRIENDLY FONT MODE */
+/* ============================================================================ */
+
+.intrinsics-level-up-wizard.dyslexia-font,
+.intrinsics-level-up-wizard.dyslexia-font * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Trebuchet MS', sans-serif !important;
+}
+
+/* Preserve Font Awesome icons - they need their own font-family to display correctly */
+.intrinsics-level-up-wizard.dyslexia-font .fas,
+.intrinsics-level-up-wizard.dyslexia-font .far,
+.intrinsics-level-up-wizard.dyslexia-font .fab,
+.intrinsics-level-up-wizard.dyslexia-font .fa,
+.intrinsics-level-up-wizard.dyslexia-font .fa-solid,
+.intrinsics-level-up-wizard.dyslexia-font .fa-regular,
+.intrinsics-level-up-wizard.dyslexia-font .fa-brands,
+.intrinsics-level-up-wizard.dyslexia-font [class^="fa-"],
+.intrinsics-level-up-wizard.dyslexia-font [class*=" fa-"] {
+  font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Free', 'Font Awesome 5 Brands', FontAwesome !important;
+}
+
+/* Slightly increase base letter spacing for dyslexic readability */
+.intrinsics-level-up-wizard.dyslexia-font {
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+}
+
+/* Ensure code/preformatted text also uses dyslexia font */
+.intrinsics-level-up-wizard.dyslexia-font code,
+.intrinsics-level-up-wizard.dyslexia-font pre {
+  font-family: 'OpenDyslexic', monospace !important;
+}
+
+/* ============================================================================ */
+/* ENHANCED READABILITY MODE */
+/* ============================================================================ */
+
+.intrinsics-level-up-wizard.enhanced-readability {
+  /* Increase base font size */
+  font-size: 16px !important;
+  
+  /* Increase line height for easier reading */
+  line-height: 1.8 !important;
+  
+  /* Increase letter spacing */
+  letter-spacing: 0.08em;
+  
+  /* Increase word spacing */
+  word-spacing: 0.15em;
+}
+
+/* Enhanced readability for headings */
+.intrinsics-level-up-wizard.enhanced-readability h1 {
+  font-size: 28px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 16px !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability h2 {
+  font-size: 24px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 14px !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability h3 {
+  font-size: 20px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 12px !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability h4 {
+  font-size: 18px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 10px !important;
+}
+
+/* Enhanced readability for paragraphs */
+.intrinsics-level-up-wizard.enhanced-readability p {
+  font-size: 16px !important;
+  line-height: 1.9 !important;
+  margin-bottom: 16px !important;
+}
+
+/* Enhanced readability for list items */
+.intrinsics-level-up-wizard.enhanced-readability li {
+  line-height: 1.8 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Enhanced readability for buttons */
+.intrinsics-level-up-wizard.enhanced-readability .btn {
+  font-size: 15px !important;
+  padding: 12px 24px !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability .btn-small {
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+}
+
+/* Enhanced readability for cards */
+.intrinsics-level-up-wizard.enhanced-readability .card {
+  padding: 20px !important;
+}
+
+/* Enhanced readability for feat/spell items */
+.intrinsics-level-up-wizard.enhanced-readability .feat-item,
+.intrinsics-level-up-wizard.enhanced-readability .spell-item {
+  padding: 14px !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability .feat-item .name,
+.intrinsics-level-up-wizard.enhanced-readability .spell-item .name {
+  font-size: 16px !important;
+}
+
+/* Enhanced readability for description text */
+.intrinsics-level-up-wizard.enhanced-readability .description,
+.intrinsics-level-up-wizard.enhanced-readability .feat-description,
+.intrinsics-level-up-wizard.enhanced-readability .spell-description,
+.intrinsics-level-up-wizard.enhanced-readability .details-content {
+  font-size: 15px !important;
+  line-height: 1.9 !important;
+}
+
+/* Enhanced inputs */
+.intrinsics-level-up-wizard.enhanced-readability input,
+.intrinsics-level-up-wizard.enhanced-readability select,
+.intrinsics-level-up-wizard.enhanced-readability textarea {
+  font-size: 15px !important;
+  padding: 12px 14px !important;
+}
+
+/* Ensure select dropdowns accommodate larger fonts */
+.intrinsics-level-up-wizard.enhanced-readability select,
+.intrinsics-level-up-wizard.dyslexia-font select {
+  height: auto !important;
+  min-height: 2.5em !important;
+  line-height: 1.5 !important;
+}
+
+.intrinsics-level-up-wizard.enhanced-readability select option,
+.intrinsics-level-up-wizard.dyslexia-font select option {
+  padding: 8px 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* ============================================================================ */
+/* HIGH CONTRAST MODE */
+/* ============================================================================ */
+
+.intrinsics-level-up-wizard.high-contrast {
+  /* Override background colors for higher contrast */
+  --iluw-bg-primary: #000000;
+  --iluw-bg-secondary: #1a1a1a;
+  --iluw-bg-card: #1a1a1a;
+  --iluw-bg-hover: rgba(255, 255, 255, 0.15);
+  
+  /* Higher contrast borders */
+  --iluw-border-color: #666666;
+  --iluw-border-highlight: #999999;
+  
+  /* Brighter text colors */
+  --iluw-text-primary: #FFFFFF;
+  --iluw-text-secondary: #E0E0E0;
+  --iluw-text-muted: #B0B0B0;
+  
+  /* Brighter accent colors */
+  --iluw-accent-green: #00FF7F;
+  --iluw-accent-blue: #87CEFA;
+  --iluw-accent-red: #FF6B6B;
+  --iluw-accent-yellow: #FFD700;
+  --iluw-accent-purple: #DA70D6;
+}
+
+/* High contrast mode - ensure backgrounds are truly dark */
+.intrinsics-level-up-wizard.high-contrast .window-content {
+  background: #000000 !important;
+}
+
+/* High contrast cards */
+.intrinsics-level-up-wizard.high-contrast .card {
+  background: #1a1a1a !important;
+  border-color: #666666 !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast .card:hover {
+  border-color: #87CEFA !important;
+  background: rgba(135, 206, 250, 0.1) !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast .card.selected {
+  border-color: #00FF7F !important;
+  background: rgba(0, 255, 127, 0.15) !important;
+}
+
+/* High contrast buttons */
+.intrinsics-level-up-wizard.high-contrast .btn-primary {
+  background: #6B21A8 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #9333EA !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast .btn-primary:hover:not(:disabled) {
+  background: #7C3AED !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast .btn-secondary {
+  background: #1a1a1a !important;
+  border: 2px solid #666666 !important;
+  color: #FFFFFF !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast .btn-secondary:hover:not(:disabled) {
+  border-color: #87CEFA !important;
+  background: rgba(135, 206, 250, 0.2) !important;
+}
+
+/* High contrast inputs */
+.intrinsics-level-up-wizard.high-contrast input,
+.intrinsics-level-up-wizard.high-contrast select,
+.intrinsics-level-up-wizard.high-contrast textarea {
+  background: #1a1a1a !important;
+  color: #FFFFFF !important;
+  border: 2px solid #666666 !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast input:focus,
+.intrinsics-level-up-wizard.high-contrast select:focus,
+.intrinsics-level-up-wizard.high-contrast textarea:focus {
+  border-color: #87CEFA !important;
+  outline: 2px solid rgba(135, 206, 250, 0.5) !important;
+}
+
+/* High contrast for traits/tags */
+.intrinsics-level-up-wizard.high-contrast .trait,
+.intrinsics-level-up-wizard.high-contrast .tag {
+  border: 1px solid currentColor !important;
+}
+
+/* High contrast proficiency ranks - brighter colors */
+.intrinsics-level-up-wizard.high-contrast {
+  --iluw-untrained: #808080;
+  --iluw-trained: #FF4444;
+  --iluw-expert: #4488FF;
+  --iluw-master: #44FF44;
+  --iluw-legendary: #FFB800;
+}
+
+/* ============================================================================ */
+/* TEXT-TO-SPEECH BUTTON STYLES */
+/* ============================================================================ */
+
+/* TTS buttons are only visible when TTS is enabled */
+.tts-button {
+  display: none;
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-left: 8px;
+  background: var(--iluw-bg-secondary);
+  border: 2px solid var(--iluw-border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button:hover {
+  background: var(--iluw-bg-hover);
+  border-color: var(--iluw-accent-blue);
+  transform: scale(1.1);
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button.speaking {
+  background: var(--iluw-accent-purple);
+  border-color: var(--iluw-accent-purple);
+  animation: tts-pulse 1s ease-in-out infinite;
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button i {
+  font-size: 14px;
+  color: var(--iluw-text-primary);
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button.speaking i {
+  color: white;
+}
+
+/* TTS button animation when speaking */
+@keyframes tts-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(155, 89, 182, 0);
+  }
+}
+
+/* Small TTS button variant for inline use */
+.intrinsics-level-up-wizard.tts-enabled .tts-button-small {
+  width: 24px;
+  height: 24px;
+  margin-left: 6px;
+}
+
+.intrinsics-level-up-wizard.tts-enabled .tts-button-small i {
+  font-size: 12px;
+}
+
+/* TTS button in detail panels */
+.intrinsics-level-up-wizard.tts-enabled .details-header .tts-button {
+  margin-left: auto;
+}
+
+/* Header with TTS button */
+.intrinsics-level-up-wizard .header-with-tts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Preview header title should not have bottom margin when in header-with-tts */
+.intrinsics-level-up-wizard .header-with-tts .feat-preview-title,
+.intrinsics-level-up-wizard .header-with-tts .spell-preview-title {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+/* ============================================================================ */
+/* COMBINED MODES */
+/* ============================================================================ */
+
+/* Dyslexia font + Enhanced readability combination */
+.intrinsics-level-up-wizard.dyslexia-font.enhanced-readability {
+  letter-spacing: 0.1em;
+  word-spacing: 0.2em;
+}
+
+/* All accessibility features combined */
+.intrinsics-level-up-wizard.dyslexia-font.enhanced-readability.high-contrast {
+  /* Maximum readability settings */
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================ */
+/* FOCUS INDICATORS FOR KEYBOARD NAVIGATION */
+/* ============================================================================ */
+
+/* Enhanced focus indicators for accessibility */
+.intrinsics-level-up-wizard *:focus-visible {
+  outline: 3px solid var(--iluw-accent-blue) !important;
+  outline-offset: 2px !important;
+}
+
+.intrinsics-level-up-wizard.high-contrast *:focus-visible {
+  outline: 3px solid #FFD700 !important;
+  outline-offset: 2px !important;
+}
+
+/* ============================================================================ */
+/* REDUCED MOTION PREFERENCE */
+/* ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .intrinsics-level-up-wizard,
+  .intrinsics-level-up-wizard * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .intrinsics-level-up-wizard.tts-enabled .tts-button.speaking {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(155, 89, 182, 0.5);
+  }
+}
+
+/* ============================================================================ */
+/* SCREEN READER HELPERS */
+/* ============================================================================ */
+
+/* Visually hidden but accessible to screen readers */
+.intrinsics-level-up-wizard .sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip link for keyboard navigation */
+.intrinsics-level-up-wizard .skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--iluw-accent-blue);
+  color: white;
+  padding: 8px 16px;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.intrinsics-level-up-wizard .skip-link:focus {
+  top: 0;
+}
