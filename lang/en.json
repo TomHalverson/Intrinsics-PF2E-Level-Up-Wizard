@@ -204,6 +204,8 @@
 
     "placeholders": {
       "no-feat-selected": "No feat selected",
+      "no-feat-available": "No feat available",
+      "feat-skipped": "No archetype feat available — skipped",
       "no-spell-selected": "No spells selected",
       "no-ability-boosts": "No ability boosts selected",
       "no-skill-increases": "No skill increases selected",

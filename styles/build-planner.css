@@ -31,6 +31,7 @@
   padding: 12px 16px;
   background: var(--iluw-bg-secondary);
   border-bottom: 2px solid var(--iluw-border-color);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 
 .build-planner-app .level-navigator {
@@ -413,6 +414,12 @@
 .build-planner-app .skill-rank-display {
   font-size: 11px;
   color: var(--iluw-text-muted);
+}
+
+.build-planner-app .skill-limit-reason {
+  font-size: 11px;
+  color: var(--iluw-accent-red);
+  margin-top: 4px;
 }
 
 .build-planner-app .skill-rank {

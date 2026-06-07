@@ -335,11 +335,12 @@ export function getCurrentBoostSet(actor, targetLevel) {
   const gradualBoosts = VariantRulesHelpers.isGradualBoostsEnabled();
 
   if (!gradualBoosts) {
-    // Standard boosts
-    if (targetLevel === 5) return '0';
-    if (targetLevel === 10) return '1';
-    if (targetLevel === 15) return '2';
-    if (targetLevel === 20) return '3';
+    // Standard boosts. PF2e keys attribute boosts on the actor by character
+    // level (system.build.attributes.boosts.<level>), so return the level.
+    if (targetLevel === 5) return '5';
+    if (targetLevel === 10) return '10';
+    if (targetLevel === 15) return '15';
+    if (targetLevel === 20) return '20';
     return null;
   } else {
     // Gradual boosts
@@ -392,7 +393,9 @@ export function isSpellcaster(actor) {
 
   const spellcasterClasses = [
     'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle',
-    'witch', 'magus', 'summoner', 'psychic', 'animist', 'necromancer'
+    'witch', 'magus', 'summoner', 'psychic', 'animist', 'necromancer',
+    // SF2E classes
+    'mystic', 'precog', 'technomancer', 'witchwarper'
   ];
 
   const isSpellcasterResult = spellcasterClasses.includes(classSlug);
@@ -509,4 +512,15 @@ export function getRunesmithChangesAtLevel(targetLevel) {
       maxEtchedRunes: current.maxEtchedRunes
     }
   };
+}
+
+/**
+ * Get how many new runes a Runesmith learns at a specific level.
+ * @param {Actor} actor - The actor
+ * @param {number} targetLevel - The target level
+ * @returns {number} Number of runes to select
+ */
+export function getRunesToLearnAtLevel(actor, targetLevel) {
+  if (!isRunesmith(actor)) return 0;
+  return getRunesmithChangesAtLevel(targetLevel)?.runicRepertoireIncrease || 0;
 }

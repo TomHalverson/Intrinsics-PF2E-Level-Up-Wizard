@@ -23,11 +23,13 @@ export class LevelUpStateManager {
       skillFeats: null,
       generalFeats: null,
       freeArchetypeFeats: null,
+      skipArchetypeFeat: false,
       ancestryParagonFeats: null,
       mythicFeats: null,
       dualClassFeats: null,
       skillIncreases: [],
       abilityBoosts: [],
+      runes: [],
       // Spell selections
       cantrips: [],
       rank1Spells: [],

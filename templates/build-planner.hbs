@@ -69,6 +69,42 @@
   </div>
   {{/if}}
 
+  {{#if runeSelection}}
+  <div class="choice-section">
+    <div class="choice-section-header">
+      <div class="choice-section-title">
+        <i class="fas fa-gem"></i>
+        Select Runes
+      </div>
+      <span class="choice-required">Required: {{runeSelection.maxRunes}}</span>
+    </div>
+    <div class="choice-display {{#if (gt runeSelection.current.length 0)}}has-choice{{/if}}">
+      {{#if (gt runeSelection.current.length 0)}}
+      <div class="choice-details">
+        <p class="choice-name">{{runeSelection.current.length}} rune(s) selected</p>
+        <div class="choice-meta">
+          {{#each runeSelection.current}}
+          <span>{{lookup ../choicesWithNames.runes @index}}</span>
+          {{/each}}
+        </div>
+      </div>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-action="selectRune" data-max-runes="{{runeSelection.maxRunes}}">
+          <i class="fas fa-edit"></i> Change
+        </button>
+      </div>
+      {{else}}
+      <span class="choice-placeholder">No runes selected ({{runeSelection.current.length}}/{{runeSelection.maxRunes}})</span>
+      <div class="choice-actions">
+        <button type="button" class="btn btn-primary btn-small" data-action="selectRune" data-max-runes="{{runeSelection.maxRunes}}">
+          <i class="fas fa-plus"></i> Select
+        </button>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
   {{#if featSlots.class}}
   <div class="choice-section">
     <div class="choice-section-header">
@@ -471,12 +507,16 @@
     <div class="skill-selection">
       <div class="skill-list">
         {{#each availableSkills}}
-        <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+        <div class="skill-item {{#if (and (not this.canIncrease) (not (includes ../choices.skillIncreases this.key)))}}disabled{{/if}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
              data-action="toggleSkillIncrease"
-             data-skill="{{this.key}}">
+             data-skill="{{this.key}}"
+             title="{{this.unavailableReason}}">
           <div class="skill-name-rank">
             <div class="skill-name-display">{{this.name}}</div>
             <div class="skill-rank-display">{{this.currentRankName}} → {{this.nextRankName}}</div>
+            {{#if this.unavailableReason}}
+            <div class="skill-limit-reason">{{this.unavailableReason}}</div>
+            {{/if}}
           </div>
         </div>
         {{/each}}

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../intrinsics-pf2e-character-builder"
+		},
+		{
+			"path": "../../foundry-mcp-bridge"
+		}
+	],
+	"settings": {}
+}

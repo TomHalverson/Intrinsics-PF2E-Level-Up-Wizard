@@ -36,6 +36,16 @@
              data-filter="trait">
     </div>
 
+    {{! Tag Filter }}
+    <div class="filter-group">
+      <label class="filter-label">Tag</label>
+      <select class="filter-select" data-action="updateFilters" data-filter="tag">
+        {{#each tagOptions}}
+        <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+
     {{! Uncommon Filter }}
     <div class="filter-group">
       <div class="filter-checkbox">
@@ -82,7 +92,6 @@
                value="{{minLevel}}"
                min="0"
                max="10"
-               data-action="updateFilters"
                data-filter="minLevel">
         <span>to</span>
         <input type="number"
@@ -91,9 +100,36 @@
                value="{{maxLevel}}"
                min="0"
                max="10"
-               data-action="updateFilters"
                data-filter="maxLevel">
       </div>
+    </div>
+
+    {{! Grouping Filter }}
+    <div class="filter-group">
+      <label class="filter-label">Group</label>
+      <select class="filter-select" data-action="updateFilters" data-filter="groupBy">
+        {{#each groupOptions}}
+        <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    {{! Selected-only Filter }}
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-selected-only"
+               {{#if showSelectedOnly}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="selectedOnly">
+        <label for="show-selected-only">Selected Only</label>
+      </div>
+    </div>
+
+    <div class="filter-group filter-actions-group">
+      <button type="button" class="btn btn-secondary btn-small" data-action="resetFilters" {{#unless hasActiveFilters}}disabled{{/unless}}>
+        <i class="fas fa-rotate-left"></i> Reset Filters
+      </button>
     </div>
   </div>
 
@@ -127,11 +163,13 @@
         {{/if}}
       </div>
 
-      {{#if spell.school}}
+      {{#if spell.importantTagLabels.length}}
       <div class="spell-preview-section">
-        <h4 class="spell-preview-section-title">School</h4>
-        <div class="spell-preview-text">
-          {{capitalize spell.school}}
+        <h4 class="spell-preview-section-title">Important Tags</h4>
+        <div class="spell-preview-traits">
+          {{#each spell.importantTagLabels as |tag|}}
+          <span class="trait-badge">{{tag}}</span>
+          {{/each}}
         </div>
       </div>
       {{/if}}
@@ -196,8 +234,54 @@
         </span>
       </div>
 
+      {{#if canCollapseGroups}}
+      <div class="spell-group-controls">
+        <span class="spell-group-controls-label">Grouped by {{groupBy}}</span>
+      </div>
+      {{/if}}
+
+      {{#if hasSelectedSpells}}
+      <div class="selected-spells-panel">
+        <div class="selected-spells-header">
+          <span class="selected-spells-title">Selected Spells</span>
+          <span class="selected-spells-count">{{selectionsCount}}/{{maxSpells}}</span>
+        </div>
+        <div class="selected-spell-chips">
+          {{#each selectedSpellSummaries as |spell|}}
+          <button type="button"
+                  class="selected-spell-chip"
+                  data-action="toggleSpellSelection"
+                  data-spell-uuid="{{spell.uuid}}"
+                  title="Remove {{spell.name}}">
+            <span class="selected-spell-chip-name">{{spell.name}}</span>
+            <span class="selected-spell-chip-rank">{{spell.rankLabel}}</span>
+            <i class="fas fa-times"></i>
+          </button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
       <div class="spell-list-container">
-        {{#if spells}}
+        {{#if hasSpellGroups}}
+        {{#each spellGroups as |group|}}
+        <div class="spell-group">
+          <div class="spell-group-header">
+            <button type="button" class="spell-group-toggle" data-action="toggleGroup" data-group-key="{{group.key}}">
+              <i class="fas {{#if group.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}}"></i>
+              <span class="spell-group-title">{{group.label}}</span>
+            </button>
+            <span class="spell-group-count">{{group.spells.length}}</span>
+          </div>
+          <div class="spell-group-list {{#if group.collapsed}}collapsed{{/if}}">
+            {{#each group.spells as |spell|}}
+            {{> spellCard spell=spell}}
+            {{/each}}
+          </div>
+        </div>
+        {{/each}}
+
+        {{else if spells}}
         {{#each spells as |spell|}}
         {{> spellCard spell=spell}}
         {{/each}}
@@ -236,11 +320,13 @@
           {{/if}}
         </div>
 
-        {{#if activeSpellDetails.school}}
+        {{#if activeSpellDetails.importantTagLabels.length}}
         <div class="spell-preview-section">
-          <h4 class="spell-preview-section-title">School</h4>
-          <div class="spell-preview-text">
-            {{capitalize activeSpellDetails.school}}
+          <h4 class="spell-preview-section-title">Important Tags</h4>
+          <div class="spell-preview-traits">
+            {{#each activeSpellDetails.importantTagLabels as |tag|}}
+            <span class="trait-badge">{{tag}}</span>
+            {{/each}}
           </div>
         </div>
         {{/if}}
@@ -381,7 +467,9 @@
         <span class="rarity-badge {{spell.rarityClass}}">{{capitalize spell.rarity}}</span>
         {{/if}}
       </div>
-      <div class="spell-card-school">{{capitalize spell.school}}</div>
+      {{#if spell.primaryTagLabel}}
+      <div class="spell-card-school">{{spell.primaryTagLabel}}</div>
+      {{/if}}
     </div>
 
     {{#if spell.isSelected}}

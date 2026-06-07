@@ -1,0 +1,212 @@
+<div class="spell-selector-container">
+  <div class="selector-header">
+    <h2 class="selector-title">{{title}}</h2>
+  </div>
+
+  <div class="selector-filters">
+    <div class="filter-group">
+      <input type="text"
+             class="filter-search"
+             placeholder="Search runes..."
+             value="{{searchQuery}}">
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-uncommon-runes"
+               {{#if showUncommon}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="uncommon">
+        <label for="show-uncommon-runes">Show Uncommon</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-rare-runes"
+               {{#if showRare}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="rare">
+        <label for="show-rare-runes">Show Rare</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Level Range</label>
+      <div class="filter-level-range">
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Min"
+               value="{{minLevel}}"
+               min="0"
+           max="{{levelCap}}"
+               data-filter="minLevel">
+        <span>to</span>
+        <input type="number"
+               class="filter-level-input"
+               placeholder="Max"
+               value="{{maxLevel}}"
+               min="0"
+           max="{{levelCap}}"
+               data-filter="maxLevel">
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="show-selected-runes-only"
+               {{#if showSelectedOnly}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="selectedOnly">
+        <label for="show-selected-runes-only">Selected Only</label>
+      </div>
+    </div>
+
+    <div class="filter-group filter-actions-group">
+      <button type="button" class="btn btn-secondary btn-small" data-action="resetFilters" {{#unless hasActiveFilters}}disabled{{/unless}}>
+        <i class="fas fa-rotate-left"></i> Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <div class="selector-content">
+    <div class="spell-list-column">
+      <div class="spell-list-info">
+        <span>{{runeCount}} rune(s)</span>
+        <span class="spell-count">{{runeCount}}</span>
+        <span class="selection-indicator">Selected ({{selectionsCount}}/{{maxRunes}})</span>
+      </div>
+
+      {{#if hasSelectedRunes}}
+      <div class="selected-spells-panel">
+        <div class="selected-spells-header">
+          <span class="selected-spells-title">Selected Runes</span>
+          <span class="selected-spells-count">{{selectionsCount}}/{{maxRunes}}</span>
+        </div>
+        <div class="selected-spell-chips">
+          {{#each selectedRuneSummaries as |rune|}}
+          <button type="button"
+                  class="selected-spell-chip"
+                  data-action="toggleRuneSelection"
+                  data-rune-uuid="{{rune.uuid}}"
+                  title="Remove {{rune.name}}">
+            <span class="selected-spell-chip-name">{{rune.name}}</span>
+            <span class="selected-spell-chip-rank">{{rune.levelLabel}}</span>
+            <i class="fas fa-times"></i>
+          </button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="spell-list-container">
+        {{#each runes as |rune|}}
+        <div class="spell-card {{#if (eq rune.uuid ../activeRune)}}active{{/if}} {{#if rune.isSelected}}selected{{/if}}"
+             data-rune-uuid="{{rune.uuid}}">
+
+          <div class="spell-card-header">
+            <img src="{{rune.img}}" alt="{{rune.name}}" class="spell-card-icon">
+
+            <div class="spell-card-info">
+              <div class="spell-card-title">
+                {{rune.name}}
+                <span class="spell-card-rank">Level {{rune.level}}</span>
+                {{#if (notEqual rune.rarity 'common')}}
+                <span class="rarity-badge {{rune.rarityClass}}">{{capitalize rune.rarity}}</span>
+                {{/if}}
+              </div>
+              <div class="spell-card-school">Rune</div>
+            </div>
+
+            {{#if rune.isSelected}}
+            <div class="spell-card-selected">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            {{/if}}
+          </div>
+
+          {{#if rune.traits.length}}
+          <div class="spell-card-traits">
+            {{#each rune.traits as |trait|}}
+            <span class="trait-badge trait-badge-small">{{trait}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+
+          {{#if rune.system.description.value}}
+          <div class="spell-card-description">
+            {{plainText rune.system.description.value}}
+          </div>
+          {{/if}}
+
+          <div class="spell-card-meta">
+            <span><i class="fas fa-gem"></i> Rune</span>
+            <span><i class="fas fa-layer-group"></i> Level {{rune.level}}</span>
+          </div>
+
+          <div class="spell-card-toggle" data-action="toggleRuneSelection" data-rune-uuid="{{rune.uuid}}">
+            {{#if rune.isSelected}}
+            <i class="fas fa-minus-circle"></i> Remove
+            {{else}}
+            <i class="fas fa-plus-circle"></i> Add
+            {{/if}}
+          </div>
+        </div>
+        {{else}}
+        <div class="empty-state">
+          <i class="fas fa-gem"></i>
+          <p>No runes match the current filters.</p>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="spell-preview-column">
+      {{#if activeRuneDetails}}
+      <div class="spell-preview">
+        <div class="spell-preview-header">
+          <h3 class="spell-preview-title">{{activeRuneDetails.name}}</h3>
+          <div class="spell-preview-meta">
+            <span><strong>Level:</strong> {{activeRuneDetails.level}}</span>
+            <span><strong>Rarity:</strong> {{activeRuneDetails.rarity}}</span>
+          </div>
+          {{#if activeRuneDetails.traits.length}}
+          <div class="spell-preview-traits">
+            {{#each activeRuneDetails.traits as |trait|}}
+            <span class="trait-badge">{{trait}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+
+        <div class="spell-preview-section">
+          <h4 class="spell-preview-section-title">Description</h4>
+          <div class="spell-preview-description">
+            {{{activeRuneDetails.description}}}
+          </div>
+        </div>
+      </div>
+      {{else}}
+      <div class="empty-state">
+        <i class="fas fa-gem"></i>
+        <p>Select a rune to preview it.</p>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="selector-footer">
+    <div class="selector-footer-info">
+      <span>{{selectionsCount}}/{{maxRunes}} selected</span>
+    </div>
+    <div class="selector-footer-actions">
+      <button type="button" class="btn btn-secondary" data-action="cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" data-action="confirm" {{#unless canConfirm}}disabled{{/unless}}>
+        Confirm Runes
+      </button>
+    </div>
+  </div>
+</div>

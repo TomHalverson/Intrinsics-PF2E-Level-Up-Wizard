@@ -11,6 +11,7 @@ export class DataProvider {
     this.cache = {
       feats: null,
       spells: null,
+      runes: null,
       classes: null,
       ancestries: null,
       heritages: null,
@@ -125,9 +126,12 @@ export class DataProvider {
       }
 
       // Load RR playtest class feats (PF2E)
-      const rrPlaytestCompendium = game.packs.get('pf2e-playtest-data.rr-playtest-class-features');
+      let rrPlaytestCompendium = game.packs.get('pf2e-playtest-data.rr-playtest-class-feats');
+      if (!rrPlaytestCompendium) {
+        rrPlaytestCompendium = game.packs.get('pf2e-playtest-data.rr-playtest-class-features');
+      }
       if (rrPlaytestCompendium) {
-        debugLog('DataProvider', 'Loading feats from pf2e-playtest-data.rr-playtest-class-features...');
+        debugLog('DataProvider', `Loading feats from ${rrPlaytestCompendium.collection}...`);
         try {
           const rrFeats = await rrPlaytestCompendium.getDocuments();
           allFeats = allFeats.concat(rrFeats.filter(f => f.type === 'feat'));
@@ -135,6 +139,8 @@ export class DataProvider {
         } catch (err) {
           console.warn('DataProvider | Failed to load RR playtest feats:', err);
         }
+      } else {
+        console.warn('DataProvider | RR playtest feat compendium not found (tried rr-playtest-class-feats and rr-playtest-class-features)');
       }
 
       // Load SF2E playtest feats (starfinder-field-test-for-pf2e module)
@@ -327,6 +333,78 @@ export class DataProvider {
       return result;
     } finally {
       this.loading.delete('spells');
+    }
+  }
+
+  // ==========================================================================
+  // RUNE METHODS
+  // ==========================================================================
+
+  /**
+   * Get runes from the Runesmith playtest compendium
+   * @param {Object} filters - Filter options
+   * @returns {Promise<Array>} Array of rune documents
+   */
+  async getRunes(filters = {}) {
+    const allRunes = await this._loadRunes();
+
+    let filtered = allRunes;
+
+    if (filters.maxLevel !== undefined) {
+      filtered = filtered.filter(r => (r.system?.level?.value ?? 0) <= filters.maxLevel);
+    }
+
+    if (filters.minLevel !== undefined) {
+      filtered = filtered.filter(r => (r.system?.level?.value ?? 0) >= filters.minLevel);
+    }
+
+    if (filters.rarity) {
+      filtered = filtered.filter(r => (r.system?.traits?.rarity ?? 'common') === filters.rarity);
+    }
+
+    if (filters.knownRunes?.length) {
+      filtered = filtered.filter(rune => !filters.knownRunes.some(known =>
+        known.name?.toLowerCase() === rune.name?.toLowerCase() ||
+        known.sourceId === rune.uuid ||
+        known.flags?.core?.sourceId === rune.uuid
+      ));
+    }
+
+    debugLog('DataProvider.getRunes', `Returned ${filtered.length} runes (${allRunes.length} total)`);
+    return filtered;
+  }
+
+  async _loadRunes() {
+    if (this.cache.runes) {
+      return this.cache.runes;
+    }
+
+    if (this.loading.has('runes')) {
+      return this.loading.get('runes');
+    }
+
+    const loadPromise = (async () => {
+      const compendium = game.packs.get('pf2e-playtest-data.impossible-playtest-runes');
+      if (!compendium) {
+        console.warn(`${MODULE_NAME} | Runes compendium not found: pf2e-playtest-data.impossible-playtest-runes`);
+        this.cache.runes = [];
+        return [];
+      }
+
+      debugLog('DataProvider', 'Loading runes from pf2e-playtest-data.impossible-playtest-runes...');
+      const documents = await compendium.getDocuments();
+      const runes = documents;
+      this.cache.runes = runes;
+      debugLog('DataProvider', `Loaded ${runes.length} total runes`);
+      return runes;
+    })();
+
+    this.loading.set('runes', loadPromise);
+
+    try {
+      return await loadPromise;
+    } finally {
+      this.loading.delete('runes');
     }
   }
 
@@ -524,6 +602,7 @@ export class DataProvider {
     this.cache = {
       feats: null,
       spells: null,
+      runes: null,
       classes: null,
       ancestries: null,
       heritages: null,

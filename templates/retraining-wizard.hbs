@@ -1,0 +1,272 @@
+<div class="retraining-container">
+  {{! Header }}
+  <div class="retraining-header">
+    <h1 class="retraining-title">
+      <i class="fas fa-rotate"></i>
+      Retraining Wizard
+    </h1>
+    <p class="retraining-subtitle">{{actorName}} — Level {{actorLevel}}</p>
+  </div>
+
+  {{! Category Tabs }}
+  <div class="retraining-tabs">
+    {{#each categories}}
+    <button type="button" class="retraining-tab {{#if this.active}}active{{/if}}"
+            data-action="selectCategory" data-category="{{this.key}}">
+      <i class="{{this.icon}}"></i>
+      <span>{{this.label}}</span>
+    </button>
+    {{/each}}
+  </div>
+
+  <div class="retraining-body">
+    {{! Left Panel - Item List }}
+    <div class="retraining-list-panel">
+      <h3 class="panel-heading">
+        {{#if (eq selectedCategory "feats")}}Your Feats{{/if}}
+        {{#if (eq selectedCategory "skills")}}Your Skills{{/if}}
+        {{#if (eq selectedCategory "spells")}}Your Spells{{/if}}
+      </h3>
+
+      <div class="retrainable-list">
+        {{#if (eq selectedCategory "feats")}}
+          {{! === Grouped Feat Display === }}
+          {{#if hasFeatGroups}}
+            {{#each featGroups}}
+            <div class="feat-group">
+              <div class="feat-group-header">
+                <i class="{{this.icon}}"></i>
+                <span class="feat-group-label">{{this.label}}</span>
+                <span class="feat-group-count">{{this.count}}</span>
+              </div>
+              {{#each this.items}}
+              <div class="retrainable-item {{#if this.selected}}selected{{/if}} {{#if this.blocked}}blocked{{/if}}"
+                   data-action="selectItem"
+                   data-uuid="{{this.uuid}}"
+                   data-key="{{this.key}}"
+                   data-blocked="{{this.blocked}}"
+                   title="{{#if this.blocked}}Blocked by: {{this.blockedBy}}{{else}}Click to select for retraining{{/if}}">
+
+                {{#if this.img}}
+                <img class="item-img" src="{{this.img}}" alt="" />
+                {{else}}
+                <div class="item-img item-img-placeholder">
+                  <i class="fas fa-question"></i>
+                </div>
+                {{/if}}
+
+                <div class="item-info">
+                  <span class="item-name">{{this.name}}</span>
+                  <span class="item-meta">Lv {{this.level}} · {{this.timeCost}}</span>
+                </div>
+
+                <div class="item-status-badges">
+                  {{#if this.blocked}}
+                  <span class="badge badge-blocked" title="Depended on by: {{this.blockedBy}}">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  {{/if}}
+                  {{#if (and this.rarity (notEqual this.rarity "common"))}}
+                  <span class="badge badge-rarity rarity-{{this.rarity}}">{{this.rarity}}</span>
+                  {{/if}}
+                </div>
+              </div>
+              {{/each}}
+            </div>
+            {{/each}}
+          {{else}}
+          <div class="empty-state">
+            <i class="fas fa-info-circle"></i>
+            <p>No retrainable feats found.</p>
+          </div>
+          {{/if}}
+        {{else}}
+          {{! === Flat List for Skills / Spells === }}
+          {{#if retrainableItems.length}}
+          {{#each retrainableItems}}
+          <div class="retrainable-item {{#if this.selected}}selected{{/if}} {{#if this.blocked}}blocked{{/if}}"
+               data-action="selectItem"
+               data-uuid="{{this.uuid}}"
+               data-key="{{this.key}}"
+               data-blocked="{{this.blocked}}"
+               title="{{#if this.blocked}}Blocked by: {{this.blockedBy}}{{else}}Click to select for retraining{{/if}}">
+
+            {{#if this.img}}
+            <img class="item-img" src="{{this.img}}" alt="" />
+            {{else}}
+            <div class="item-img item-img-placeholder">
+              {{#if (eq ../selectedCategory "skills")}}
+              <i class="fas fa-graduation-cap"></i>
+              {{else}}
+              <i class="fas fa-question"></i>
+              {{/if}}
+            </div>
+            {{/if}}
+
+            <div class="item-info">
+              <span class="item-name">{{this.name}}</span>
+              <span class="item-meta">
+                {{this.typeLabel}}
+                {{#if this.level}} · Lv {{this.level}}{{/if}}
+                {{#if this.rankLabel}} · {{this.rankLabel}}{{/if}}
+              </span>
+            </div>
+
+            <div class="item-status-badges">
+              {{#if this.blocked}}
+              <span class="badge badge-blocked" title="Depended on by: {{this.blockedBy}}">
+                <i class="fas fa-lock"></i>
+              </span>
+              {{/if}}
+              {{#if (and this.rarity (notEqual this.rarity "common"))}}
+              <span class="badge badge-rarity rarity-{{this.rarity}}">{{this.rarity}}</span>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+          {{else}}
+          <div class="empty-state">
+            <i class="fas fa-info-circle"></i>
+            <p>No retrainable items found in this category.</p>
+          </div>
+          {{/if}}
+        {{/if}}
+      </div>
+    </div>
+
+    {{! Right Panel - Detail & Replacement }}
+    <div class="retraining-detail-panel">
+      {{#if selectedItem}}
+
+      {{! Selected Item Detail }}
+      <div class="detail-section">
+        <h3 class="panel-heading">
+          <i class="fas fa-arrow-right-from-bracket"></i>
+          Retraining Away
+        </h3>
+
+        {{#if selectedItemDetails}}
+        <div class="detail-card detail-card-old">
+          {{#if selectedItemDetails.img}}
+          <img class="detail-img" src="{{selectedItemDetails.img}}" alt="" />
+          {{/if}}
+          <div class="detail-info">
+            <h4>{{selectedItemDetails.name}}</h4>
+            {{#if selectedItemDetails.level}}<span class="detail-level">Level {{selectedItemDetails.level}}</span>{{/if}}
+            {{#if selectedItemDetails.rankLabel}}<span class="detail-rank">{{selectedItemDetails.rankLabel}}</span>{{/if}}
+          </div>
+        </div>
+
+        {{! Description }}
+        <div class="detail-description">
+          {{{detailHTML}}}
+        </div>
+        {{/if}}
+
+        {{! Time Cost }}
+        {{#if timeCost}}
+        <div class="time-cost-box">
+          <i class="fas fa-hourglass-half"></i>
+          <div class="time-cost-info">
+            <span class="time-cost-value">{{timeCost.description}}</span>
+            <span class="time-cost-rule">{{timeCost.rule}}</span>
+          </div>
+        </div>
+        {{/if}}
+
+        {{! Dependency Warning }}
+        {{#if hasDependents}}
+        <div class="dependency-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <strong>Cannot retrain!</strong>
+            <p>The following items depend on this:</p>
+            <ul>
+              {{#each dependents}}
+              <li>{{this.name}}</li>
+              {{/each}}
+            </ul>
+            <p><em>Retrain the dependent items first.</em></p>
+          </div>
+        </div>
+        {{/if}}
+      </div>
+
+      {{! Replacement Section }}
+      <div class="detail-section replacement-section">
+        <h3 class="panel-heading">
+          <i class="fas fa-arrow-right-to-bracket"></i>
+          Replacement
+        </h3>
+
+        {{#if replacementItem}}
+        {{#if replacementDetails}}
+        <div class="detail-card detail-card-new">
+          {{#if replacementDetails.img}}
+          <img class="detail-img" src="{{replacementDetails.img}}" alt="" />
+          {{/if}}
+          <div class="detail-info">
+            <h4>{{replacementDetails.name}}</h4>
+            {{#if replacementDetails.level}}<span class="detail-level">Level {{replacementDetails.level}}</span>{{/if}}
+            {{#if replacementDetails.rankLabel}}<span class="detail-rank">{{replacementDetails.rankLabel}}</span>{{/if}}
+          </div>
+        </div>
+
+        <div class="detail-description">
+          {{{replacementDetailHTML}}}
+        </div>
+        {{/if}}
+
+        <button type="button" class="btn btn-secondary" data-action="chooseReplacement">
+          <i class="fas fa-exchange-alt"></i> Change Replacement
+        </button>
+        {{else}}
+        <div class="replacement-prompt">
+          <button type="button" class="btn btn-primary btn-large" data-action="chooseReplacement"
+                  {{#if hasDependents}}disabled title="Resolve dependencies first"{{/if}}>
+            <i class="fas fa-search"></i> Choose Replacement
+          </button>
+        </div>
+        {{/if}}
+      </div>
+
+      {{else}}
+      {{! No Selection }}
+      <div class="no-selection">
+        <i class="fas fa-hand-pointer"></i>
+        <h3>Select an Item</h3>
+        <p>Choose an item from the list to begin retraining.</p>
+        <p class="text-muted">Items marked with <i class="fas fa-lock"></i> cannot be retrained because other items depend on them.</p>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  {{! Footer }}
+  <div class="retraining-footer">
+    {{! Retraining Log }}
+    {{#if retrainingLog.length}}
+    <div class="retraining-log-summary">
+      <span class="log-count">{{retrainingLog.length}} change(s) this session</span>
+    </div>
+    {{/if}}
+
+    <div class="retraining-footer-actions">
+      {{#if canApply}}
+      <button type="button" class="btn btn-primary" data-action="applyRetraining">
+        <i class="fas fa-check"></i> Apply Retraining
+      </button>
+      {{/if}}
+
+      {{#if selectedItem}}
+      <button type="button" class="btn btn-secondary" data-action="clearSelection">
+        <i class="fas fa-eraser"></i> Clear Selection
+      </button>
+      {{/if}}
+
+      <button type="button" class="btn btn-secondary" data-action="cancel">
+        <i class="fas fa-times"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
