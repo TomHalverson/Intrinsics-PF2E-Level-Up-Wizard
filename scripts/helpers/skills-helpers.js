@@ -1,7 +1,6 @@
 // Skills Helpers - Skill proficiency logic and skill increases
 import { MODULE_NAME, debugLog } from '../module.js';
 import * as VariantRulesHelpers from './variant-rules-helpers.js';
-import { getLocKeyPrefix, isPF2E } from '../system-config.js';
 
 // Skill proficiency ranks
 export const SKILL_PROFICIENCY_RANKS = {
@@ -12,137 +11,12 @@ export const SKILL_PROFICIENCY_RANKS = {
   LEGENDARY: 4
 };
 
-// Core skill list (shared by PF2E and SF2E)
+// Skill list
 export const SKILLS = [
   'acrobatics', 'arcana', 'athletics', 'crafting', 'deception',
   'diplomacy', 'intimidation', 'medicine', 'nature', 'occultism',
   'performance', 'religion', 'society', 'stealth', 'survival', 'thievery'
 ];
-
-// Starfinder 2E adds Computers (Int) and Piloting (Dex) to the core skill list
-const SF2E_SKILLS = ['computers', 'piloting'];
-
-/**
- * Get the skill list for the active game system.
- * SF2E extends the core PF2E skills with Computers and Piloting.
- * @returns {string[]} Array of skill keys
- */
-export function getSystemSkills() {
-  if (!isPF2E()) {
-    return [...SKILLS, ...SF2E_SKILLS];
-  }
-  return SKILLS;
-}
-
-/**
- * Get the maximum skill proficiency rank a character can hold at a given level.
- * Trained -> Expert is available at any level, Master requires level 7,
- * Legendary requires level 15.
- * @param {number} level - Effective character level
- * @returns {number} Maximum allowed rank
- */
-export function getMaximumSkillRankForLevel(level) {
-  if (level >= 15) return SKILL_PROFICIENCY_RANKS.LEGENDARY;
-  if (level >= 7) return SKILL_PROFICIENCY_RANKS.MASTER;
-  return SKILL_PROFICIENCY_RANKS.EXPERT;
-}
-
-/**
- * Get the minimum level required for a given skill proficiency rank.
- * @param {number} rank - Proficiency rank
- * @returns {number} Minimum required level
- */
-export function getMinimumLevelForSkillRank(rank) {
-  switch (rank) {
-    case SKILL_PROFICIENCY_RANKS.MASTER:
-      return 7;
-    case SKILL_PROFICIENCY_RANKS.LEGENDARY:
-      return 15;
-    case SKILL_PROFICIENCY_RANKS.TRAINED:
-    case SKILL_PROFICIENCY_RANKS.EXPERT:
-    case SKILL_PROFICIENCY_RANKS.UNTRAINED:
-    default:
-      return 1;
-  }
-}
-
-/**
- * Build projected skill ranks after planned increases.
- * @param {Actor} actor - The actor
- * @param {Object} plannedSkillIncreases - Optional object mapping skill keys to number of planned increases
- * @returns {Object} Object mapping skill keys to projected rank values
- */
-export function getProjectedSkillRanks(actor, plannedSkillIncreases = {}) {
-  const projectedRanks = {};
-
-  for (const skillKey of getSystemSkills()) {
-    const baseRank = actor.system.skills?.[skillKey]?.rank || 0;
-    const plannedIncreases = plannedSkillIncreases[skillKey] || 0;
-    projectedRanks[skillKey] = Math.min(baseRank + plannedIncreases, SKILL_PROFICIENCY_RANKS.LEGENDARY);
-  }
-
-  return projectedRanks;
-}
-
-/**
- * Get detailed skill increase eligibility for a level.
- * @param {Actor} actor - The actor
- * @param {string} skillKey - Skill key
- * @param {number} targetLevel - Effective character level when the increase applies
- * @param {Object} plannedSkillIncreases - Optional object mapping skill keys to number of planned increases
- * @returns {Object} Eligibility details
- */
-export function getSkillIncreaseEligibility(actor, skillKey, targetLevel, plannedSkillIncreases = {}) {
-  const skill = actor.system.skills?.[skillKey];
-
-  if (!skill) {
-    return {
-      key: skillKey,
-      canIncrease: false,
-      unavailableReason: 'Skill not found',
-      currentRank: 0,
-      nextRank: SKILL_PROFICIENCY_RANKS.TRAINED,
-      maxRankForLevel: getMaximumSkillRankForLevel(targetLevel),
-      minimumLevelForNextRank: 1
-    };
-  }
-
-  const baseRank = skill.rank || 0;
-  const plannedIncreases = plannedSkillIncreases[skillKey] || 0;
-  const currentRank = Math.min(baseRank + plannedIncreases, SKILL_PROFICIENCY_RANKS.LEGENDARY);
-  const nextRank = Math.min(currentRank + 1, SKILL_PROFICIENCY_RANKS.LEGENDARY);
-  const maxRankForLevel = getMaximumSkillRankForLevel(targetLevel);
-  const minimumLevelForNextRank = getMinimumLevelForSkillRank(nextRank);
-
-  if (currentRank >= SKILL_PROFICIENCY_RANKS.LEGENDARY) {
-    return {
-      key: skillKey,
-      canIncrease: false,
-      unavailableReason: 'Already Legendary',
-      currentRank,
-      nextRank,
-      maxRankForLevel,
-      minimumLevelForNextRank
-    };
-  }
-
-  const canIncrease = nextRank <= maxRankForLevel;
-  const unavailableReason = canIncrease
-    ? ''
-    : `${getRankName(nextRank)} requires level ${minimumLevelForNextRank}`;
-
-  return {
-    key: skillKey,
-    canIncrease,
-    unavailableReason,
-    currentRank,
-    nextRank,
-    maxRankForLevel,
-    minimumLevelForNextRank,
-    baseRank,
-    plannedIncreases
-  };
-}
 
 /**
  * Get available skills for increase at level
@@ -154,30 +28,30 @@ export function getSkillIncreaseEligibility(actor, skillKey, targetLevel, planne
 export function getSkillsForLevel(actor, targetLevel, plannedSkillIncreases = {}) {
   const skills = [];
 
-  for (const skillKey of getSystemSkills()) {
+  for (const skillKey of SKILLS) {
     const skill = actor.system.skills[skillKey];
 
     if (!skill) continue;
 
-    const eligibility = getSkillIncreaseEligibility(actor, skillKey, targetLevel, plannedSkillIncreases);
-    const effectiveRank = eligibility.currentRank;
-    const nextRank = eligibility.currentRank >= SKILL_PROFICIENCY_RANKS.LEGENDARY
-      ? SKILL_PROFICIENCY_RANKS.LEGENDARY
-      : eligibility.nextRank;
+    // Base rank from actor's current state
+    const baseRank = skill.rank || 0;
+    
+    // Add any planned increases from earlier levels in the build plan
+    const plannedIncreases = plannedSkillIncreases[skillKey] || 0;
+    const effectiveRank = Math.min(baseRank + plannedIncreases, SKILL_PROFICIENCY_RANKS.LEGENDARY);
+    
+    const canIncrease = effectiveRank < SKILL_PROFICIENCY_RANKS.LEGENDARY;
 
     skills.push({
       key: skillKey,
       name: getSkillTranslation(skillKey),
       currentRank: effectiveRank,
-      baseRank: eligibility.baseRank,
-      plannedIncreases: eligibility.plannedIncreases,
+      baseRank: baseRank,
+      plannedIncreases: plannedIncreases,
       currentRankName: getRankName(effectiveRank),
-      nextRank: nextRank,
-      nextRankName: getRankName(nextRank),
-      canIncrease: eligibility.canIncrease,
-      unavailableReason: eligibility.unavailableReason,
-      minimumLevelForNextRank: eligibility.minimumLevelForNextRank,
-      maxRankForLevel: eligibility.maxRankForLevel
+      nextRank: effectiveRank + 1,
+      nextRankName: getRankName(effectiveRank + 1),
+      canIncrease
     });
   }
 
@@ -193,12 +67,11 @@ export function getSkillsForLevel(actor, targetLevel, plannedSkillIncreases = {}
  * @returns {string} Translated skill name
  */
 export function getSkillTranslation(skillKey) {
-  // Try to get translation from game using system-appropriate prefix
-  const prefix = getLocKeyPrefix();
-  const translation = game.i18n.localize(`${prefix}.Skill${capitalize(skillKey)}`);
+  // Try to get translation from game
+  const translation = game.i18n.localize(`PF2E.Skill${capitalize(skillKey)}`);
 
   // If translation not found, use capitalized key
-  if (translation.startsWith(`${prefix}.`)) {
+  if (translation.startsWith('PF2E.')) {
     return capitalize(skillKey);
   }
 
@@ -262,8 +135,15 @@ export function getRankColor(rank) {
  * @param {string} skillKey - Skill key
  * @returns {boolean} True if can be increased
  */
-export function canIncreaseSkill(actor, skillKey, targetLevel = actor.system?.details?.level?.value ?? 1, plannedSkillIncreases = {}) {
-  return getSkillIncreaseEligibility(actor, skillKey, targetLevel, plannedSkillIncreases).canIncrease;
+export function canIncreaseSkill(actor, skillKey) {
+  const skill = actor.system.skills[skillKey];
+
+  if (!skill) {
+    return false;
+  }
+
+  const currentRank = skill.rank || 0;
+  return currentRank < SKILL_PROFICIENCY_RANKS.LEGENDARY;
 }
 
 /**
@@ -281,10 +161,8 @@ export async function increaseSkillProficiency(actor, skillKey) {
 
   const currentRank = skill.rank || 0;
 
-  const targetLevel = actor.system?.details?.level?.value ?? 1;
-  const eligibility = getSkillIncreaseEligibility(actor, skillKey, targetLevel);
-  if (!eligibility.canIncrease) {
-    throw new Error(eligibility.unavailableReason || `Skill ${skillKey} cannot be increased at level ${targetLevel}`);
+  if (currentRank >= SKILL_PROFICIENCY_RANKS.LEGENDARY) {
+    throw new Error(`Skill ${skillKey} is already legendary`);
   }
 
   const newRank = currentRank + 1;
@@ -367,7 +245,7 @@ export function buildSkillPotencyModifier(potency) {
 export function getTrainedSkills(actor) {
   const trainedSkills = [];
 
-  for (const skillKey of getSystemSkills()) {
+  for (const skillKey of SKILLS) {
     const skill = actor.system.skills[skillKey];
 
     if (skill && skill.rank >= SKILL_PROFICIENCY_RANKS.TRAINED) {
@@ -387,7 +265,7 @@ export function getTrainedSkills(actor) {
 export function getSkillsAtRank(actor, rank) {
   const skills = [];
 
-  for (const skillKey of getSystemSkills()) {
+  for (const skillKey of SKILLS) {
     const skill = actor.system.skills[skillKey];
 
     if (skill && skill.rank === rank) {
@@ -436,10 +314,7 @@ export function getSkillAbility(skillKey) {
     'society': 'int',
     'stealth': 'dex',
     'survival': 'wis',
-    'thievery': 'dex',
-    // SF2E skills
-    'computers': 'int',
-    'piloting': 'dex'
+    'thievery': 'dex'
   };
 
   return skillAbilities[skillKey] || '';

@@ -85,13 +85,6 @@
         </div>
         {{/if}}
 
-        {{#if (gt this.choices.runes.length 0)}}
-        <div class="summary-choice">
-          <i class="fas fa-gem"></i>
-          <span>{{this.choices.runes.length}} Runes</span>
-        </div>
-        {{/if}}
-
         {{! Check for spells across all ranks }}
         {{#if this.choices.cantrips}}
         <div class="summary-choice">

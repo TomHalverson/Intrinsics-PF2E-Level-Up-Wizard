@@ -28,7 +28,6 @@
   padding: 16px;
   background: var(--iluw-bg-secondary);
   border-bottom: 2px solid var(--iluw-border-color);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 
 .spell-selector-app .selector-title {
@@ -102,11 +101,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.18);
-}
-
-.spell-selector-app .filter-actions-group {
-  margin-left: auto;
 }
 
 .spell-selector-app .selector-actions-left {
@@ -177,21 +171,6 @@
 .spell-selector-app .filter-search:focus {
   outline: none;
   border-color: var(--iluw-accent-blue);
-}
-
-.spell-selector-app .filter-level-input {
-  width: 64px;
-  padding: 6px 8px;
-  border: 1px solid var(--iluw-border-color);
-  border-radius: 4px;
-  background: var(--iluw-bg-primary);
-  color: var(--iluw-text-primary);
-}
-
-.spell-selector-app .filter-level-range {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .spell-selector-app .filter-checkbox {
@@ -278,133 +257,6 @@
 .spell-selector-app .selection-indicator {
   font-weight: 600;
   color: var(--iluw-accent-purple);
-}
-
-.spell-selector-app .selected-spells-panel {
-  background: var(--iluw-bg-secondary);
-  border: 2px solid var(--iluw-border-color);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-}
-
-.spell-selector-app .selected-spells-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.spell-selector-app .selected-spells-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--iluw-text-primary);
-}
-
-.spell-selector-app .selected-spells-count {
-  font-size: 12px;
-  color: var(--iluw-accent-purple);
-  font-weight: 700;
-}
-
-.spell-selector-app .selected-spell-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.spell-selector-app .selected-spell-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--iluw-text-primary);
-  border-radius: 999px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.spell-selector-app .selected-spell-chip:hover {
-  border-color: var(--iluw-accent-green);
-  background: rgba(16, 185, 129, 0.2);
-}
-
-.spell-selector-app .selected-spell-chip-name {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.spell-selector-app .selected-spell-chip-rank {
-  font-size: 11px;
-  color: var(--iluw-text-muted);
-}
-
-.spell-selector-app .spell-group {
-  margin-bottom: 16px;
-}
-
-.spell-selector-app .spell-group-header {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  background: var(--iluw-bg-primary);
-  border: 1px solid var(--iluw-border-color);
-  border-radius: 8px;
-}
-
-.spell-selector-app .spell-group-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-}
-
-.spell-selector-app .spell-group-toggle:hover {
-  color: var(--iluw-accent-blue);
-}
-
-.spell-selector-app .spell-group-list.collapsed {
-  display: none;
-}
-
-.spell-selector-app .spell-group-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-
-.spell-selector-app .spell-group-controls-label {
-  font-size: 12px;
-  color: var(--iluw-text-muted);
-  text-transform: capitalize;
-}
-
-.spell-selector-app .spell-group-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--iluw-text-primary);
-}
-
-.spell-selector-app .spell-group-count {
-  min-width: 24px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--iluw-accent-purple);
-  background: rgba(155, 89, 182, 0.15);
-  border-radius: 999px;
-  padding: 3px 8px;
 }
 
 .spell-selector-app .spell-card {

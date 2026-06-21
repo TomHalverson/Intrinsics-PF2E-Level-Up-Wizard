@@ -5,9 +5,6 @@
 
 import dataProvider from './data-provider.js';
 import { checkPrerequisites, hasArchetypeDedication, getArchetypeDedications, getMythicDedications, hasMythicDedication, sortFeats } from './helpers/feat-helpers.js';
-import { getSystemSkills, getSkillTranslation } from './helpers/skills-helpers.js';
-
-const FEAT_TYPES_WITH_PREREQUISITE_FILTER = new Set(['classFeats', 'ancestryFeats', 'skillFeats', 'generalFeats']);
 
 export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   constructor(actor, featType, targetLevel, currentSelection = null, options = {}) {
@@ -29,12 +26,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
     this.skillFilter = 'all'; // Filter skill feats by specific skill
     this.hideArchetypeFeats = true; // Hide feats with archetype trait (for skill feats)
     this.showSkillFeats = false; // Show skill feats in general feat picker (PF2E allows taking skill feat for general feat)
-    this.filterUnmetPrerequisites = false; // Optional filtering for definitely unmet prerequisites
     this.sortMethod = game.settings.get('intrinsics-pf2e-level-up-wizard', 'feat-sort-method');
-    this.prerequisiteContext = {
-      effectiveLevel: targetLevel,
-      ...(options.prerequisiteContext || {})
-    };
 
     // Archetype filter - defaults to first archetype if actor has any, otherwise 'all'
     this._actorDedications = getArchetypeDedications(actor);
@@ -69,8 +61,8 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       resizable: true
     },
     position: {
-      width: 980,
-      height: 760
+      width: 900,
+      height: 700
     },
     actions: {
       selectFeat: FeatSelectorApp.prototype._onSelectFeat,
@@ -80,7 +72,6 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       removeFromCompare: FeatSelectorApp.prototype._onRemoveFromCompare,
       updateSearch: FeatSelectorApp.prototype._onUpdateSearch,
       updateFilters: FeatSelectorApp.prototype._onUpdateFilters,
-      resetFilters: FeatSelectorApp.prototype._onResetFilters,
       speakPreview: FeatSelectorApp.prototype._onSpeakPreview,
       confirm: FeatSelectorApp.prototype._onConfirm,
       cancel: FeatSelectorApp.prototype._onCancel
@@ -161,11 +152,8 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       isSkillFeats: this.featType === 'skillFeats',
       isGeneralFeats: this.featType === 'generalFeats',
       showSkillFeats: this.showSkillFeats,
-      filterUnmetPrerequisites: this.filterUnmetPrerequisites,
-      supportsPrerequisiteFilter: this._supportsPrerequisiteFilter(),
       availableSkills: this._getAvailableSkills(),
       sortMethod: this.sortMethod,
-      hasActiveFilters: this._hasActiveFilters(),
 
       // Available archetypes for dropdown (for free archetype feats)
       availableArchetypes: this.featType === 'freeArchetypeFeats' ? this._getAvailableArchetypes(feats) : [],
@@ -655,7 +643,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       }
 
       // Check prerequisites and determine CSS class
-      const prereqCheck = checkPrerequisites(this.actor, feat, this.prerequisiteContext);
+      const prereqCheck = checkPrerequisites(this.actor, feat);
       let prereqClass = '';
       if (prereqCheck.meets === true) {
         prereqClass = 'prereq-met'; // Green - all prerequisites met
@@ -676,7 +664,6 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
         uuid: feat.uuid, // Explicitly include uuid since it's a getter
         isSelected: feat.uuid === this.currentSelection, // For template selected state
         prerequisitesMet: prereqCheck.meets,
-        prerequisiteCheck: prereqCheck,
         prerequisitesText: prerequisitesText, // Formatted prerequisites string
         prerequisitesClass: prereqClass, // CSS class for color coding
         featTypeName: this._getFeatTypeName(feat),
@@ -690,34 +677,10 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       };
     });
 
-    const visibleFeats = this.filterUnmetPrerequisites && this._supportsPrerequisiteFilter()
-      ? enrichedFeats.filter(feat => feat.prerequisitesMet !== false)
-      : enrichedFeats;
-
     // Apply sorting
-    const sortedFeats = sortFeats(visibleFeats, this.sortMethod);
+    const sortedFeats = sortFeats(enrichedFeats, this.sortMethod);
 
     return sortedFeats;
-  }
-
-  _supportsPrerequisiteFilter() {
-    return FEAT_TYPES_WITH_PREREQUISITE_FILTER.has(this.featType);
-  }
-
-  _hasActiveFilters() {
-    const hasLevelOverrides = this.selectedLevel !== 'all' || this.minLevel > 1 || this.maxLevel < this.targetLevel;
-    return Boolean(
-      this.searchQuery ||
-      hasLevelOverrides ||
-      !this.showUncommon ||
-      this.showRare ||
-      this.archetypeSearchQuery ||
-      this.skillFilter !== 'all' ||
-      !this.hideArchetypeFeats ||
-      this.showSkillFeats ||
-      this.filterUnmetPrerequisites ||
-      this.showGateFilter
-    );
   }
 
   /**
@@ -751,11 +714,25 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
    * Get list of available skills for the skill filter dropdown
    */
   _getAvailableSkills() {
-    // System-aware skill list (SF2E adds Computers and Piloting)
-    const skills = getSystemSkills().map(key => ({
-      key,
-      name: getSkillTranslation(key)
-    }));
+    // Standard PF2e skills
+    const skills = [
+      { key: 'acrobatics', name: 'Acrobatics' },
+      { key: 'arcana', name: 'Arcana' },
+      { key: 'athletics', name: 'Athletics' },
+      { key: 'crafting', name: 'Crafting' },
+      { key: 'deception', name: 'Deception' },
+      { key: 'diplomacy', name: 'Diplomacy' },
+      { key: 'intimidation', name: 'Intimidation' },
+      { key: 'medicine', name: 'Medicine' },
+      { key: 'nature', name: 'Nature' },
+      { key: 'occultism', name: 'Occultism' },
+      { key: 'performance', name: 'Performance' },
+      { key: 'religion', name: 'Religion' },
+      { key: 'society', name: 'Society' },
+      { key: 'stealth', name: 'Stealth' },
+      { key: 'survival', name: 'Survival' },
+      { key: 'thievery', name: 'Thievery' }
+    ];
 
     // Add lore as an option
     skills.push({ key: 'lore', name: 'Lore' });
@@ -885,8 +862,6 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
   async _prepareFeatDetails(feat) {
     if (!feat) return null;
 
-    const prereqCheck = checkPrerequisites(this.actor, feat, this.prerequisiteContext);
-
     // Format prerequisites for display
     let prerequisitesText = '';
     const prereqs = feat.system.prerequisites?.value || [];
@@ -897,13 +872,12 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       }).join('; ');
     }
 
-    // Enrich description HTML for @UUID links, @Damage, @Check, etc.
+    // Enrich description HTML for @UUID links
     let enrichedDescription = feat.system.description?.value || '';
     if (enrichedDescription) {
       enrichedDescription = await TextEditor.enrichHTML(enrichedDescription, {
         async: true,
-        relativeTo: this.actor,
-        rollData: this.actor.getRollData()
+        relativeTo: this.actor
       });
     }
 
@@ -925,9 +899,7 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       traitsWithGateStatus: traitsWithGateStatus,
       rarity: feat.system.traits?.rarity || 'common',
       prerequisites: prerequisitesText,
-      prerequisitesMet: prereqCheck.meets,
-      prerequisiteCheck: prereqCheck,
-      prerequisitesClass: prereqCheck.meets === true ? 'prereq-met' : prereqCheck.meets === false ? 'prereq-unmet' : 'prereq-unknown',
+      prerequisitesMet: checkPrerequisites(this.actor, feat),
       actions: feat.system.actionType?.value,
       frequency: feat.system.frequency?.value,
       trigger: feat.system.trigger?.value
@@ -1087,34 +1059,12 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
       case 'hideArchetypeFeats':
         this.hideArchetypeFeats = target.checked;
         break;
-      case 'filterUnmetPrerequisites':
-        this.filterUnmetPrerequisites = target.checked;
-        break;
     }
 
     // Save scroll position and focus state before render
     this._saveScrollPosition();
     this._saveFocusState();
 
-    await this.render();
-  }
-
-  async _onResetFilters(event, target) {
-    this.searchQuery = '';
-    this.selectedLevel = 'all';
-    this.minLevel = 1;
-    this.maxLevel = this.targetLevel;
-    this.showUncommon = true;
-    this.showRare = false;
-    this.archetypeSearchQuery = '';
-    this.skillFilter = 'all';
-    this.hideArchetypeFeats = true;
-    this.showSkillFeats = false;
-    this.filterUnmetPrerequisites = false;
-    this.showGateFilter = false;
-
-    this._saveScrollPosition();
-    this._saveFocusState();
     await this.render();
   }
 
@@ -1269,18 +1219,6 @@ export class FeatSelectorApp extends foundry.applications.api.HandlebarsApplicat
   async _onConfirm(event, target) {
     if (!this.currentSelection) {
       ui.notifications.warn('Please select a feat first.');
-      return;
-    }
-
-    const selectedFeat = await fromUuid(this.currentSelection);
-    if (!selectedFeat) {
-      ui.notifications.warn('Selected feat could not be loaded.');
-      return;
-    }
-
-    const prereqCheck = checkPrerequisites(this.actor, selectedFeat, this.prerequisiteContext);
-    if (prereqCheck.meets === false) {
-      ui.notifications.warn(`Selected feat has unmet prerequisites: ${prereqCheck.missing.join(', ')}`);
       return;
     }
 

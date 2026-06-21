@@ -3,15 +3,6 @@ import { MODULE_NAME, debugLog } from './module.js';
 import dataProvider from './data-provider.js';
 import * as SpellHelpers from './helpers/spell-helpers.js';
 
-const PRIORITY_SPELL_TAGS = [
-  { key: 'attack', label: 'Attack' },
-  { key: 'exploration', label: 'Exploration' },
-  { key: 'healing', label: 'Healing' },
-  { key: 'teleportation', label: 'Teleportation' },
-  { key: 'illusion', label: 'Illusion' },
-  { key: 'summon', label: 'Summon' }
-];
-
 /**
  * Spell Selector - Modal for selecting spells
  */
@@ -30,18 +21,13 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
     // State
     this.searchQuery = '';
-    this.showUncommon = game.settings.get(MODULE_NAME, 'spell-selector-show-uncommon');
-    this.showRare = game.settings.get(MODULE_NAME, 'spell-selector-show-rare');
+    this.showUncommon = true; // Show uncommon by default
+    this.showRare = false; // Don't show rare by default
     this.showCantrips = rank === 0; // Include cantrips if selecting cantrips
     this.traitFilter = ''; // Trait search
-    this.tagFilter = 'all'; // Filter by important spell tags
-    this.showSelectedOnly = false; // Narrow list to selected spells only
     // Set initial rank filter range based on selected rank
     this.minLevel = rank === 0 ? 0 : rank; // Minimum spell rank for filter
     this.maxLevel = rank === 0 ? 0 : rank; // Maximum spell rank for filter
-    this.groupBy = game.settings.get(MODULE_NAME, 'spell-selector-group-by');
-    if (this.groupBy === 'school') this.groupBy = 'tag';
-    this.collapsedGroups = new Set();
 
     // UI state
     this.activeSpell = null; // Spell currently shown in preview
@@ -63,8 +49,8 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       resizable: true
     },
     position: {
-      width: 980,
-      height: 760
+      width: 900,
+      height: 700
     },
     actions: {
       toggleSpell: SpellSelectorApp.prototype._onToggleSpell,
@@ -77,8 +63,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       updateFilters: SpellSelectorApp.prototype._onUpdateFilters,
       changeTradition: SpellSelectorApp.prototype._onChangeTradition,
       speakPreview: SpellSelectorApp.prototype._onSpeakPreview,
-      toggleGroup: SpellSelectorApp.prototype._onToggleGroup,
-      resetFilters: SpellSelectorApp.prototype._onResetFilters,
       confirm: SpellSelectorApp.prototype._onConfirm,
       cancel: SpellSelectorApp.prototype._onCancel
     }
@@ -102,9 +86,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
     // Get all available spells
     const spells = await this._getFilteredSpells();
-    const tagOptionSpells = await this._getTagOptionSpells();
-    const spellGroups = this._getSpellGroups(spells);
-    const selectedSpellSummaries = await this._getSelectedSpellSummaries();
 
     // Get active spell details if one is selected
     let activeSpellDetails = null;
@@ -150,23 +131,11 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       showRare: this.showRare,
       showCantrips: this.showCantrips,
       traitFilter: this.traitFilter,
-      tagFilter: this.tagFilter,
-      showSelectedOnly: this.showSelectedOnly,
       minLevel: this.minLevel,
       maxLevel: this.maxLevel,
-      groupBy: this.groupBy,
-      tagOptions: this._getAvailableTags(tagOptionSpells),
-      groupOptions: [
-        { value: 'none', label: 'No Grouping', selected: this.groupBy === 'none' },
-        { value: 'rank', label: 'Group by Rank', selected: this.groupBy === 'rank' },
-        { value: 'tag', label: 'Group by Tag', selected: this.groupBy === 'tag' }
-      ],
 
       // Spells
       spells: spells,
-      spellGroups: spellGroups,
-      hasSpellGroups: spellGroups.length > 0,
-      canCollapseGroups: spellGroups.length > 0 && this.groupBy !== 'none',
       spellCount: spells.length,
 
       // UI state
@@ -180,9 +149,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
       // Current selections
       currentSelections: this.currentSelections,
-      selectedSpellSummaries: selectedSpellSummaries,
-      hasSelectedSpells: selectedSpellSummaries.length > 0,
-      hasActiveFilters: this._hasActiveFilters(),
       selectionsCount: this.currentSelections.length,
       canSelectMore: this.currentSelections.length < this.maxSpells,
       canConfirm: this.currentSelections.length > 0
@@ -220,11 +186,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
         } else {
           this._focusedInput = { selector: '.filter-search:not([data-filter])', cursorPos: activeElement.selectionStart };
         }
-      } else if (activeElement.classList.contains('filter-level-input')) {
-        this._focusedInput = {
-          selector: `.filter-level-input[data-filter="${activeElement.dataset.filter}"]`,
-          cursorPos: activeElement.selectionStart
-        };
       } else {
         this._focusedInput = null;
       }
@@ -300,20 +261,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
         });
       }
 
-      const tagSelect = element.querySelector('.filter-select[data-filter="tag"]');
-      if (tagSelect) {
-        tagSelect.addEventListener('change', (event) => {
-          this._onUpdateFilters(event, event.target);
-        });
-      }
-
-      const groupSelect = element.querySelector('.filter-select[data-filter="groupBy"]');
-      if (groupSelect) {
-        groupSelect.addEventListener('change', (event) => {
-          this._onUpdateFilters(event, event.target);
-        });
-      }
-
       // Manually attach input listeners for search and trait filter (ApplicationV2 actions don't work well with input events)
       const searchInputs = element.querySelectorAll('.filter-search');
       searchInputs.forEach((input, index) => {
@@ -324,18 +271,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
           } else {
             this._onUpdateFilters(event, event.target);
           }
-        });
-      });
-
-      const levelInputs = element.querySelectorAll('.filter-level-input');
-      levelInputs.forEach((input) => {
-        input.addEventListener('input', (event) => {
-          clearTimeout(this._levelFilterTimeout);
-          this._levelFilterTimeout = setTimeout(async () => {
-            this._saveScrollPosition();
-            this._saveFocusState();
-            await this._onUpdateFilters(event, event.target);
-          }, 250);
         });
       });
 
@@ -421,21 +356,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       });
     }
 
-    // Important tag filter
-    if (this.tagFilter && this.tagFilter !== 'all') {
-      filtered = filtered.filter(spell => {
-        const tags = this._getImportantSpellTags(spell);
-        return this.tagFilter === 'other'
-          ? tags.length === 0
-          : tags.includes(this.tagFilter);
-      });
-    }
-
-    // Selected-only filter
-    if (this.showSelectedOnly) {
-      filtered = filtered.filter(spell => this.currentSelections.includes(spell.uuid));
-    }
-
     // Note: Level range filter is now applied during loading (lines 186-193)
     // No need to filter again here since we only loaded spells in the selected range
 
@@ -444,16 +364,17 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
     // Add selection state, rarity info, and enriched description to each spell
     filtered = await Promise.all(filtered.map(async spell => {
-      const importantTags = this._getImportantSpellTags(spell);
-      const primaryTag = importantTags[0] || 'other';
+      // Extract school from traits
+      const school = spell.system.traits?.value?.find(t =>
+        ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation'].includes(t)
+      ) || '';
 
-      // Enrich description for @UUID links, @Damage, @Check, etc. in card view
+      // Enrich description for @UUID links in card view
       let enrichedDescription = spell.system.description?.value || '';
       if (enrichedDescription) {
         enrichedDescription = await TextEditor.enrichHTML(enrichedDescription, {
           async: true,
-          relativeTo: this.actor,
-          rollData: this.actor.getRollData()
+          relativeTo: this.actor
         });
       }
 
@@ -463,9 +384,7 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
         isSelected: this.currentSelections.includes(spell.uuid),
         rarity: spell.system.traits?.rarity || 'common',
         rarityClass: this._getRarityClass(spell.system.traits?.rarity || 'common'),
-        importantTags,
-        primaryTag,
-        primaryTagLabel: this._getSpellTagLabel(primaryTag),
+        school: school,
         enrichedDescription: enrichedDescription
       };
     }));
@@ -475,192 +394,15 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     return filtered;
   }
 
-  async _getTagOptionSpells() {
-    const tradition = this.selectedTradition || this.autoDetectedTradition;
-    if (!tradition) return [];
-
-    const existingSpells = this.actor.items.filter(i => i.type === 'spell');
-    let allSpells = [];
-
-    for (let rank = this.minLevel; rank <= this.maxLevel; rank++) {
-      const rankedSpells = await dataProvider.getSpells({
-        rank,
-        tradition,
-        rarity: undefined,
-        knownSpells: existingSpells
-      });
-      allSpells = allSpells.concat(rankedSpells);
-    }
-
-    let filtered = allSpells.filter(spell => {
-      const rarity = spell.system.traits?.rarity || 'common';
-      if (rarity === 'uncommon' && !this.showUncommon) return false;
-      if (rarity === 'rare' && !this.showRare) return false;
-      return true;
-    });
-
-    if (!this.showCantrips) {
-      filtered = filtered.filter(spell => {
-        const traits = spell.system.traits?.value || [];
-        return !traits.includes('cantrip');
-      });
-    }
-
-    if (this.knownSpells && this.knownSpells.length > 0) {
-      filtered = filtered.filter(spell => !this.knownSpells.includes(spell.uuid));
-    }
-
-    if (this.traitFilter) {
-      const traitQuery = this.traitFilter.toLowerCase();
-      filtered = filtered.filter(spell => {
-        const traits = spell.system.traits?.value || [];
-        return traits.some(trait => trait.toLowerCase().includes(traitQuery));
-      });
-    }
-
-    return filtered.map(spell => ({
-      ...spell,
-      importantTags: this._getImportantSpellTags(spell)
-    }));
-  }
-
-  _getImportantSpellTags(spell) {
-    const traits = (spell.system.traits?.value || []).map(trait => String(trait).toLowerCase());
-    const name = spell.name?.toLowerCase() || '';
-    const slug = spell.slug?.toLowerCase() || '';
-    const description = spell.system.description?.value?.toLowerCase() || '';
-
-    return PRIORITY_SPELL_TAGS
-      .filter(({ key }) => {
-        if (key === 'summon') {
-          return traits.includes('summon') || name.includes('summon') || slug.includes('summon') || description.includes('summon');
-        }
-
-        return traits.includes(key);
-      })
-      .map(({ key }) => key);
-  }
-
-  _getSpellTagLabel(tagKey) {
-    if (tagKey === 'other') return 'Other';
-    return PRIORITY_SPELL_TAGS.find(tag => tag.key === tagKey)?.label || tagKey;
-  }
-
-  _getAvailableTags(spells) {
-    const tags = new Set();
-    let hasOther = false;
-
-    for (const spell of spells) {
-      const spellTags = spell.importantTags || this._getImportantSpellTags(spell);
-      if (spellTags.length === 0) {
-        hasOther = true;
-        continue;
-      }
-
-      for (const tag of spellTags) tags.add(tag);
-    }
-
-    return [
-      { value: 'all', label: 'All Tags', selected: this.tagFilter === 'all' },
-      ...PRIORITY_SPELL_TAGS.filter(tag => tags.has(tag.key)).map(tag => ({
-        value: tag.key,
-        label: tag.label,
-        selected: this.tagFilter === tag.key
-      })),
-      ...(hasOther ? [{ value: 'other', label: 'Other', selected: this.tagFilter === 'other' }] : [])
-    ];
-  }
-
-  _getSpellGroups(spells) {
-    if (this.groupBy === 'none') {
-      return [];
-    }
-
-    const groups = new Map();
-
-    for (const spell of spells) {
-      const groupKey = this.groupBy === 'tag'
-        ? (spell.primaryTag || 'other')
-        : `${spell.system.level?.value ?? 0}`;
-
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, {
-          key: groupKey,
-          label: this.groupBy === 'tag'
-            ? this._getSpellTagLabel(groupKey)
-            : (Number(groupKey) === 0 ? 'Cantrips' : `Rank ${groupKey}`),
-          collapsed: this.collapsedGroups.has(groupKey),
-          spells: []
-        });
-      }
-
-      groups.get(groupKey).spells.push(spell);
-    }
-
-    const sortedGroups = Array.from(groups.values());
-    sortedGroups.sort((a, b) => {
-      if (this.groupBy === 'rank') return Number(a.key) - Number(b.key);
-      return a.label.localeCompare(b.label);
-    });
-
-    return sortedGroups;
-  }
-
-  _hasActiveFilters() {
-    const defaultMinLevel = this.rank === 0 ? 0 : this.rank;
-    const defaultMaxLevel = this.rank === 0 ? 0 : this.rank;
-    return Boolean(
-      this.searchQuery ||
-      this.traitFilter ||
-      this.tagFilter !== 'all' ||
-      this.showSelectedOnly ||
-      this.showCantrips !== (this.rank === 0) ||
-      this.minLevel !== defaultMinLevel ||
-      this.maxLevel !== defaultMaxLevel ||
-      this.showUncommon !== game.settings.get(MODULE_NAME, 'spell-selector-show-uncommon') ||
-      this.showRare !== game.settings.get(MODULE_NAME, 'spell-selector-show-rare') ||
-      this.groupBy !== game.settings.get(MODULE_NAME, 'spell-selector-group-by')
-    );
-  }
-
-  _persistPreferences() {
-    game.settings.set(MODULE_NAME, 'spell-selector-show-uncommon', this.showUncommon);
-    game.settings.set(MODULE_NAME, 'spell-selector-show-rare', this.showRare);
-    game.settings.set(MODULE_NAME, 'spell-selector-group-by', this.groupBy);
-  }
-
-  async _getSelectedSpellSummaries() {
-    const selectedSpells = [];
-
-    for (const spellUuid of this.currentSelections) {
-      try {
-        const spell = await fromUuid(spellUuid);
-        if (!spell) continue;
-
-        selectedSpells.push({
-          uuid: spellUuid,
-          name: spell.name,
-          rank: spell.system.level?.value ?? 0,
-          rankLabel: (spell.system.level?.value ?? 0) === 0 ? 'Cantrip' : `Rank ${spell.system.level?.value ?? 0}`
-        });
-      } catch (error) {
-        debugLog('SpellSelector._getSelectedSpellSummaries', `Failed to load selected spell ${spellUuid}`, error);
-      }
-    }
-
-    return selectedSpells.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
   async _prepareSpellDetails(spell) {
     if (!spell) return null;
 
-    // Enrich description HTML for @UUID links, @Damage, @Check, etc.
+    // Enrich description HTML for @UUID links
     let enrichedDescription = spell.system.description?.value || '';
     if (enrichedDescription) {
       enrichedDescription = await TextEditor.enrichHTML(enrichedDescription, {
         async: true,
-        relativeTo: this.actor,
-        rollData: this.actor.getRollData()
+        relativeTo: this.actor
       });
     }
 
@@ -671,10 +413,11 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
       img: spell.img,
       description: enrichedDescription,
       traits: spell.system.traits?.value || [],
-      importantTagLabels: this._getImportantSpellTags(spell).map(tag => this._getSpellTagLabel(tag)),
       traditions: spell.system.traits?.traditions || [],
       rarity: spell.system.traits?.rarity || 'common',
-      importantTags: this._getImportantSpellTags(spell),
+      school: spell.system.traits?.value?.find(t =>
+        ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation'].includes(t)
+      ) || '',
       castTime: spell.system.time?.value,
       components: spell.system.components || {},
       range: spell.system.range?.value,
@@ -726,7 +469,19 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     if (!listContainer) return;
 
     // Build new HTML for spell list
-    const html = this._renderSpellList(spells);
+    let html = '';
+
+    if (spells.length > 0) {
+      for (const spell of spells) {
+        html += this._renderSpellCard(spell);
+      }
+    } else {
+      // Empty state
+      html = `<div class="spell-list-empty">
+        <i class="fas fa-search"></i>
+        <p>${game.i18n.localize('intrinsics-pf2e-level-up-wizard.messages.info.no-spells-available')}</p>
+      </div>`;
+    }
 
     listContainer.innerHTML = html;
 
@@ -739,37 +494,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     listContainer.querySelectorAll('.spell-card-description').forEach(desc => {
       TextEditor.activateListeners(desc);
     });
-  }
-
-  _renderSpellList(spells) {
-    if (!spells.length) {
-      return `<div class="spell-list-empty">
-        <i class="fas fa-search"></i>
-        <p>${game.i18n.localize('intrinsics-pf2e-level-up-wizard.messages.info.no-spells-available')}</p>
-      </div>`;
-    }
-
-    const groups = this._getSpellGroups(spells);
-    if (!groups.length) {
-      return spells.map(spell => this._renderSpellCard(spell)).join('');
-    }
-
-    return groups.map(group => this._renderSpellGroup(group)).join('');
-  }
-
-  _renderSpellGroup(group) {
-    return `<div class="spell-group">
-      <div class="spell-group-header">
-        <button type="button" class="spell-group-toggle" data-action="toggleGroup" data-group-key="${group.key}">
-          <i class="fas ${group.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}"></i>
-          <span class="spell-group-title">${group.label}</span>
-        </button>
-        <span class="spell-group-count">${group.spells.length}</span>
-      </div>
-      <div class="spell-group-list ${group.collapsed ? 'collapsed' : ''}">
-        ${group.spells.map(spell => this._renderSpellCard(spell)).join('')}
-      </div>
-    </div>`;
   }
 
   /**
@@ -789,19 +513,20 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     html += `<img src="${spell.img}" alt="${spell.name}" class="spell-card-icon">`;
     html += `<div class="spell-card-info">`;
     html += `<div class="spell-card-title">${spell.name}`;
-    html += `<span class="spell-card-rank">${spell.system.level.value === 0 ? 'Cantrip' : `Rank ${spell.system.level.value}`}</span>`;
+    html += `<span class="spell-card-rank">Rank ${spell.system.level.value}</span>`;
     if (rarity !== 'common') {
       html += `<span class="rarity-badge ${rarityClass}">${rarity.charAt(0).toUpperCase() + rarity.slice(1)}</span>`;
     }
     html += `</div>`;
-    if (spell.primaryTagLabel && spell.primaryTag !== 'other') {
-      html += `<div class="spell-card-school">${spell.primaryTagLabel}</div>`;
+    if (spell.school) {
+      html += `<div class="spell-card-school">${spell.school.charAt(0).toUpperCase() + spell.school.slice(1)}</div>`;
     }
     html += `</div>`;
-
-    if (isSelected) {
-      html += `<div class="spell-card-selected"><i class="fas fa-check-circle"></i></div>`;
-    }
+    
+    // Selection checkbox
+    html += `<div class="spell-card-select" data-action="toggleSpell" data-spell-uuid="${spell.uuid}">`;
+    html += `<i class="fas ${isSelected ? 'fa-check-square' : 'fa-square'}"></i>`;
+    html += `</div>`;
     html += `</div>`;
 
     // Traits
@@ -816,25 +541,9 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
     // Description snippet
     if (spell.system.description?.value) {
-      const plainText = spell.system.description.value.replace(/<[^>]*>/g, '');
-      const truncated = plainText.length > 150 ? `${plainText.substring(0, 150)}...` : plainText;
-      html += `<div class="spell-card-description">${truncated}</div>`;
+      const plainText = spell.system.description.value.replace(/<[^>]*>/g, '').substring(0, 150);
+      html += `<div class="spell-card-description">${plainText}...</div>`;
     }
-
-    html += `<div class="spell-card-meta">`;
-    if (spell.system.time?.value) {
-      html += `<span><i class="fas fa-clock"></i> ${spell.system.time.value}</span>`;
-    }
-    if (spell.system.range?.value) {
-      html += `<span><i class="fas fa-arrows-alt"></i> ${spell.system.range.value}</span>`;
-    }
-    html += `</div>`;
-
-    html += `<div class="spell-card-toggle" data-action="toggleSpell" data-spell-uuid="${spell.uuid}">`;
-    html += isSelected
-      ? `<i class="fas fa-minus-circle"></i> Remove`
-      : `<i class="fas fa-plus-circle"></i> Add`;
-    html += `</div>`;
 
     html += `</div>`;
     return html;
@@ -898,11 +607,9 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
     switch (filterType) {
       case 'uncommon':
         this.showUncommon = target.checked;
-        this._persistPreferences();
         break;
       case 'rare':
         this.showRare = target.checked;
-        this._persistPreferences();
         break;
       case 'cantrips':
         this.showCantrips = target.checked;
@@ -921,16 +628,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
         break;
       case 'maxLevel':
         this.maxLevel = parseInt(target.value) || 10;
-        break;
-      case 'tag':
-        this.tagFilter = target.value;
-        break;
-      case 'selectedOnly':
-        this.showSelectedOnly = target.checked;
-        break;
-      case 'groupBy':
-        this.groupBy = target.value;
-        this._persistPreferences();
         break;
     }
 
@@ -989,40 +686,6 @@ export class SpellSelectorApp extends foundry.applications.api.HandlebarsApplica
 
     debugLog('SpellSelector._onChangeTradition', `About to render with tradition: ${this.selectedTradition}`);
 
-    await this.render();
-  }
-
-  async _onToggleGroup(event, target) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const groupKey = target.dataset.groupKey || target.closest('[data-group-key]')?.dataset.groupKey;
-    if (!groupKey) return;
-
-    if (this.collapsedGroups.has(groupKey)) {
-      this.collapsedGroups.delete(groupKey);
-    } else {
-      this.collapsedGroups.add(groupKey);
-    }
-
-    this._saveScrollPosition();
-    await this.render();
-  }
-
-  async _onResetFilters(event, target) {
-    this.searchQuery = '';
-    this.traitFilter = '';
-    this.tagFilter = 'all';
-    this.showSelectedOnly = false;
-    this.showUncommon = game.settings.get(MODULE_NAME, 'spell-selector-show-uncommon');
-    this.showRare = game.settings.get(MODULE_NAME, 'spell-selector-show-rare');
-    this.showCantrips = this.rank === 0;
-    this.minLevel = this.rank === 0 ? 0 : this.rank;
-    this.maxLevel = this.rank === 0 ? 0 : this.rank;
-    this.groupBy = game.settings.get(MODULE_NAME, 'spell-selector-group-by');
-    this.collapsedGroups.clear();
-
-    this._saveScrollPosition();
     await this.render();
   }
 

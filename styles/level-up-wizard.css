@@ -2,8 +2,8 @@
 /* Extends shared.css */
 
 .level-up-wizard-app {
-  min-width: 860px;
-  min-height: 680px;
+  min-width: 800px;
+  min-height: 600px;
 }
 
 .level-up-wizard-app .window-content {
@@ -109,51 +109,6 @@
   padding: 16px;
   background: var(--iluw-bg-secondary);
   border-bottom: 2px solid var(--iluw-border-color);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-}
-
-.level-up-wizard-app .wizard-header-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.level-up-wizard-app .wizard-header-identity {
-  display: flex;
-}
-
-.level-up-wizard-app .wizard-subtitle {
-  font-size: 14px;
-  color: var(--iluw-text-muted);
-  margin: 0 0 12px 0;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
-
-.level-up-wizard-app .wizard-header-icon-frame {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  padding: 4px;
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.18), rgba(37, 99, 235, 0.08));
-  border: 2px solid rgba(96, 165, 250, 0.25);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
-  flex-shrink: 0;
-}
-
-.level-up-wizard-app .wizard-class-icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  object-fit: cover;
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.level-up-wizard-app .wizard-header-copy {
-  min-width: 0;
 }
 
 .level-up-wizard-app .wizard-title {
@@ -169,18 +124,8 @@
   margin: 0 0 12px 0;
 }
 
-.level-up-wizard-app .wizard-class-label {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--iluw-accent-blue);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
 /* Compact Progress Bar in Header */
 .level-up-wizard-app .wizard-progress-compact {
-  min-width: 240px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -194,22 +139,16 @@
   border: 2px solid var(--iluw-border-color);
   border-radius: 10px;
   overflow: hidden;
-  position: relative;
 }
 
-.level-up-wizard-app .wizard-progress-compact .progress-bar-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
+.level-up-wizard-app .wizard-progress-compact .progress-bar {
+  height: 100%;
   background: linear-gradient(90deg, var(--iluw-accent-purple), var(--iluw-accent-blue));
   transition: width 0.3s ease;
-}
-
-.level-up-wizard-app .wizard-progress-compact .progress-bar-overlay {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 40px;
 }
 
 .level-up-wizard-app .wizard-progress-compact .progress-bar-text {
@@ -391,51 +330,6 @@
   border-radius: 6px;
   text-align: center;
   color: var(--iluw-text-muted);
-}
-
-.level-up-wizard-app .feat-not-selected-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.level-up-wizard-app .feat-skipped {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: var(--iluw-bg-primary);
-  border: 2px solid var(--iluw-text-muted);
-  border-radius: 6px;
-  color: var(--iluw-text-muted);
-}
-
-.level-up-wizard-app .feat-skipped-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-style: italic;
-}
-
-.level-up-wizard-app .skip-feat-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--iluw-text-secondary);
-  user-select: none;
-}
-
-.level-up-wizard-app .skip-feat-toggle input[type="checkbox"] {
-  pointer-events: none;
-  margin: 0;
-}
-
-.level-up-wizard-app .skip-feat-toggle:hover {
-  color: var(--iluw-text-primary);
 }
 
 .feat-icon {
@@ -663,13 +557,6 @@
 }
 
 /* ========================================================================== */
-
-  min-width: 240px;
-.level-up-wizard-app .wizard-subtitle {
-  font-size: 14px;
-  color: var(--iluw-text-muted);
-  margin: 0 0 12px 0;
-}
 /* SKILL SELECTION */
 /* ========================================================================== */
 
@@ -730,12 +617,6 @@
   color: var(--iluw-text-muted);
 }
 
-.level-up-wizard-app .skill-limit-reason {
-  font-size: 11px;
-  color: var(--iluw-accent-red);
-  margin-top: 4px;
-}
-
 /* ========================================================================== */
 /* WIZARD FOOTER */
 /* ========================================================================== */
@@ -771,21 +652,6 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--iluw-text-muted);
-}
-
-@media (max-width: 900px) {
-  .level-up-wizard-app .wizard-header-main {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .level-up-wizard-app .wizard-progress-compact {
-    min-width: 0;
-  }
-
-  .level-up-wizard-app .progress-counter {
-    text-align: left;
-  }
 }
 
 /* Progress Bar */

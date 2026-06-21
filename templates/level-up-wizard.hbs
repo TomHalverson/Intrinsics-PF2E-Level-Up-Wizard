@@ -1,30 +1,15 @@
 <div class="level-up-wizard-container">
   <div class="wizard-header">
-    <div class="wizard-header-main">
-      <div class="wizard-header-identity">
-        <div class="wizard-header-icon-frame">
-          {{#if classIconPath}}
-          <img class="wizard-class-icon" src="{{classIconPath}}" alt="{{className}}" onerror="this.onerror=null; this.src='{{actorPortrait}}';">
-          {{else}}
-          <img class="wizard-class-icon" src="{{actorPortrait}}" alt="{{actorName}}">
-          {{/if}}
-        </div>
-        <div class="wizard-header-copy">
-          <h1 class="wizard-title">Level Up to {{targetLevel}}</h1>
-          <p class="wizard-subtitle">{{actorName}}</p>
-          {{#if className}}<p class="wizard-class-label">{{className}}</p>{{/if}}
+    <h1 class="wizard-title">Level Up to {{targetLevel}}</h1>
+    <p class="wizard-subtitle">{{actorName}}</p>
+    <div class="wizard-progress-compact">
+      <div class="progress-bar-container">
+        <div class="progress-bar" style="width: {{progressPercent}}%;">
+          <span class="progress-bar-text">{{progressPercent}}%</span>
         </div>
       </div>
-      <div class="wizard-progress-compact">
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width: {{progressPercent}}%;"></div>
-          <div class="progress-bar-overlay">
-            <span class="progress-bar-text">{{progressPercent}}%</span>
-          </div>
-        </div>
-        <div class="progress-counter">
-          {{completedRequirements}}/{{totalRequirements}} Requirements Met
-        </div>
+      <div class="progress-counter">
+        {{completedRequirements}}/{{totalRequirements}} Requirements Met
       </div>
     </div>
   </div>
@@ -94,39 +79,7 @@
         <span>Your <strong>Maximum Etched Runes</strong> has increased! You can now have <strong>{{runesmithChanges.current.maxEtchedRunes}}</strong> runes etched ({{runesmithChanges.maxEtchedRunesIncrease}} new).</span>
       </div>
       {{/if}}
-      <p class="runesmith-reminder">Any runes you select below are added to the actor automatically when you apply the level up.</p>
-    </div>
-  </div>
-  {{/if}}
-
-  {{#if runeSelection}}
-  <div class="wizard-section">
-    <div class="wizard-section-header">
-      <i class="wizard-section-icon fas fa-gem"></i>
-      <h3 class="wizard-section-title">Select Runes</h3>
-    </div>
-    <p class="wizard-section-description">Select {{runeSelection.maxRunes}} rune(s) to add to your repertoire. (Selected: {{runeSelection.current.length}}/{{runeSelection.maxRunes}})</p>
-    <div class="feat-selection">
-      {{#if (gt runeSelection.current.length 0)}}
-      <div class="feat-selected">
-        <div class="feat-info">
-          <p class="feat-name">{{runeSelection.current.length}} rune(s) selected</p>
-          {{#each runeSelection.current}}
-          <p class="spell-name-item">{{../choicesWithNames.runes.[@index]}}</p>
-          {{/each}}
-        </div>
-        <button type="button" class="btn btn-secondary btn-small" data-action="selectRune" data-max-runes="{{runeSelection.maxRunes}}">
-          <i class="fas fa-edit"></i> Change
-        </button>
-      </div>
-      {{else}}
-      <div class="feat-not-selected">
-        <p>No runes selected</p>
-        <button type="button" class="btn btn-primary" data-action="selectRune" data-max-runes="{{runeSelection.maxRunes}}">
-          <i class="fas fa-plus"></i> Select Runes
-        </button>
-      </div>
-      {{/if}}
+      <p class="runesmith-reminder">Remember to add your new runes to your character sheet via the compendium..</p>
     </div>
   </div>
   {{/if}}
@@ -251,18 +204,7 @@
       <h3 class="wizard-section-title">Free Archetype Feat</h3>
     </div>
     <div class="feat-selection">
-      {{#if choices.skipArchetypeFeat}}
-      <div class="feat-skipped">
-        <div class="feat-skipped-info">
-          <i class="fas fa-forward"></i>
-          <span>No archetype feat available — skipped</span>
-        </div>
-        <label class="skip-feat-toggle" data-action="toggleSkipArchetypeFeat">
-          <input type="checkbox" checked disabled />
-          <span>No feat available</span>
-        </label>
-      </div>
-      {{else if choices.freeArchetypeFeats}}
+      {{#if choices.freeArchetypeFeats}}
       <div class="feat-selected">
         <div class="feat-info">
           <p class="feat-name">{{choicesWithNames.freeArchetypeFeats}}</p>
@@ -274,15 +216,9 @@
       {{else}}
       <div class="feat-not-selected">
         <p>No archetype feat selected</p>
-        <div class="feat-not-selected-actions">
-          <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
-            <i class="fas fa-plus"></i> Select Archetype Feat
-          </button>
-          <label class="skip-feat-toggle" data-action="toggleSkipArchetypeFeat">
-            <input type="checkbox" disabled />
-            <span>No feat available</span>
-          </label>
-        </div>
+        <button type="button" class="btn btn-primary" data-action="selectFeat" data-feat-type="freeArchetypeFeats">
+          <i class="fas fa-plus"></i> Select Archetype Feat
+        </button>
       </div>
       {{/if}}
     </div>
@@ -506,16 +442,12 @@
     <div class="skill-selection">
       <div class="skill-list">
         {{#each availableSkills}}
-        <div class="skill-item {{#if (and (not this.canIncrease) (not (includes ../choices.skillIncreases this.key)))}}disabled{{/if}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+        <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
              data-action="toggleSkillIncrease"
-             data-skill="{{this.key}}"
-             title="{{this.unavailableReason}}">
+             data-skill="{{this.key}}">
           <div class="skill-name-rank">
             <div class="skill-name-display">{{this.name}}</div>
             <div class="skill-rank-display">{{this.currentRankName}} → {{this.nextRankName}}</div>
-            {{#if this.unavailableReason}}
-            <div class="skill-limit-reason">{{this.unavailableReason}}</div>
-            {{/if}}
           </div>
         </div>
         {{/each}}
