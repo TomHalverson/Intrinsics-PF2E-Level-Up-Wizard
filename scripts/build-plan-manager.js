@@ -93,11 +93,13 @@ export class BuildPlanManager {
           skillFeats: null,
           generalFeats: null,
           freeArchetypeFeats: variantRules.freeArchetype ? null : undefined,
+          skipArchetypeFeat: variantRules.freeArchetype ? false : undefined,
           ancestryParagonFeats: variantRules.ancestryParagon ? null : undefined,
           mythicFeats: variantRules.mythic === 'enabled' ? null : undefined,
           dualClassFeats: variantRules.dualClass ? null : undefined,
           skillIncreases: [],
           abilityBoosts: [],
+          runes: [],
           spells: {
             cantrips: [],
             rank1: [],
@@ -348,10 +350,12 @@ export class BuildPlanManager {
       choices.skillFeats ||
       choices.generalFeats ||
       choices.freeArchetypeFeats ||
+      choices.skipArchetypeFeat ||
       choices.mythicFeats ||
       choices.dualClassFeats ||
       (choices.skillIncreases && choices.skillIncreases.length > 0) ||
       (choices.abilityBoosts && choices.abilityBoosts.length > 0) ||
+      (choices.runes && choices.runes.length > 0) ||
       (choices.spells && Object.values(choices.spells).some(arr => arr.length > 0))
     );
   }

@@ -9,7 +9,24 @@ import * as SpellHelpers from './helpers/spell-helpers.js';
 import * as SpellSlotProgression from './helpers/spell-slot-progression.js';
 import { FeatSelectorApp } from './feat-selector.js';
 import { SpellSelectorApp } from './spell-selector.js';
+import { RuneSelectorApp } from './rune-selector.js';
 import dataProvider from './data-provider.js';
+
+function countSelections(values = []) {
+  return values.reduce((counts, value) => {
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function hasSelection(value) {
+  if (Array.isArray(value)) return value.length > 0;
+  return value !== null && value !== undefined && value !== '';
+}
+
+function getClassIconPath(classSlug) {
+  return `modules/intrinsics-pf2e-character-builder/ClassIcons/${classSlug}_Icon.png`;
+}
 
 /**
  * Level Up Wizard - Guide player through single level-up
@@ -33,8 +50,8 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     id: 'level-up-wizard-{id}',
     classes: ['intrinsics-level-up-wizard', 'level-up-wizard-app'],
     position: {
-      width: 800,
-      height: 700
+      width: 920,
+      height: 760
     },
     window: {
       resizable: true,
@@ -43,9 +60,11 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     actions: {
       selectFeat: LevelUpWizardApp.prototype._onSelectFeat,
       selectSpell: LevelUpWizardApp.prototype._onSelectSpell,
+      selectRune: LevelUpWizardApp.prototype._onSelectRune,
       toggleAbilityBoost: LevelUpWizardApp.prototype._onToggleAbilityBoost,
       toggleSkillIncrease: LevelUpWizardApp.prototype._onToggleSkillIncrease,
       applyPlan: LevelUpWizardApp.prototype._onApplyPlan,
+      toggleSkipArchetypeFeat: LevelUpWizardApp.prototype._onToggleSkipArchetypeFeat,
       submit: LevelUpWizardApp.prototype._onSubmit,
       cancel: LevelUpWizardApp.prototype._onCancel
     }
@@ -67,6 +86,13 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Basic context
     context.actor = this.actor;
     context.actorName = this.actor.name;
+    const classItem = this.actor.class ?? this.actor.itemTypes?.class?.[0] ?? null;
+    const classSlug = classItem?.slug
+      || classItem?.system?.slug
+      || classItem?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    context.className = classItem?.name || this.actor.system.details.class?.name || null;
+    context.classIconPath = classSlug ? getClassIconPath(classSlug) : null;
+    context.actorPortrait = this.actor.img || 'icons/svg/mystery-man.svg';
     context.currentLevel = this.actor.system.details.level.value;
     context.targetLevel = this.targetLevel;
     context.isLevelUp = this.targetLevel > context.currentLevel;
@@ -78,18 +104,33 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Get feat slots
     context.featSlots = ClassFeaturesHelpers.getFeatSlotsForLevel(this.actor, this.targetLevel);
 
+    // Current choices from state manager
+    context.choices = this.stateManager.choices;
+    if (!context.choices.runes) {
+      context.choices.runes = [];
+    }
+
     // Get ability boost info
     context.abilityBoostInfo = ClassFeaturesHelpers.detectAbilityBoosts(this.actor, this.targetLevel);
 
     // Get skill increase count and available skills
     context.skillIncreaseCount = ClassFeaturesHelpers.getSkillIncreasesForLevel(this.actor, this.targetLevel);
-    context.availableSkills = context.skillIncreaseCount > 0 ? SkillsHelpers.getSkillsForLevel(this.actor, this.targetLevel) : [];
+    context.availableSkills = context.skillIncreaseCount > 0
+      ? SkillsHelpers.getSkillsForLevel(this.actor, this.targetLevel, this._getSelectedSkillIncreaseCounts())
+      : [];
 
     // Check if Runesmith and get progression info
     context.isRunesmith = ClassFeaturesHelpers.isRunesmith(this.actor);
     if (context.isRunesmith) {
       context.runesmithChanges = ClassFeaturesHelpers.getRunesmithChangesAtLevel(this.targetLevel);
       debugLog('LevelUpWizard', `Runesmith detected, changes at level ${this.targetLevel}:`, context.runesmithChanges);
+      const runesToLearn = ClassFeaturesHelpers.getRunesToLearnAtLevel(this.actor, this.targetLevel);
+      if (runesToLearn > 0) {
+        context.runeSelection = {
+          maxRunes: runesToLearn,
+          current: this.stateManager.choices.runes || []
+        };
+      }
     }
 
     // Check if spellcaster and get spell info
@@ -183,7 +224,8 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
       if (description) {
         description = await TextEditor.enrichHTML(description, {
           async: true,
-          relativeTo: this.actor
+          relativeTo: this.actor,
+          rollData: this.actor.getRollData()
         });
       }
 
@@ -194,9 +236,6 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
 
       context.classFeatures.push(enrichedFeature);
     }
-
-    // Current choices from state manager
-    context.choices = this.stateManager.choices;
 
     // Resolve feat UUIDs to names for display
     context.choicesWithNames = {};
@@ -237,7 +276,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Class feat
     if (context.featSlots.class) {
       totalRequirements++;
-      const complete = !!choices.classFeats;
+      const complete = hasSelection(choices.classFeats);
       if (complete) completedRequirements++;
       context.requirements.push({
         name: 'Class Feat',
@@ -250,7 +289,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Ancestry feat
     if (context.featSlots.ancestry) {
       totalRequirements++;
-      const complete = !!choices.ancestryFeats;
+      const complete = hasSelection(choices.ancestryFeats);
       if (complete) completedRequirements++;
       context.requirements.push({
         name: 'Ancestry Feat',
@@ -263,7 +302,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Skill feat
     if (context.featSlots.skill) {
       totalRequirements++;
-      const complete = !!choices.skillFeats;
+      const complete = hasSelection(choices.skillFeats);
       if (complete) completedRequirements++;
       context.requirements.push({
         name: 'Skill Feat',
@@ -276,7 +315,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // General feat
     if (context.featSlots.general) {
       totalRequirements++;
-      const complete = !!choices.generalFeats;
+      const complete = hasSelection(choices.generalFeats);
       if (complete) completedRequirements++;
       context.requirements.push({
         name: 'General Feat',
@@ -289,10 +328,10 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Free archetype feat (only if variant enabled AND slot exists)
     if (context.featSlots.archetype && context.featSlots.archetype > 0) {
       totalRequirements++;
-      const complete = !!choices.freeArchetypeFeats;
+      const complete = hasSelection(choices.freeArchetypeFeats) || !!choices.skipArchetypeFeat;
       if (complete) completedRequirements++;
       context.requirements.push({
-        name: 'Free Archetype Feat',
+        name: choices.skipArchetypeFeat ? 'Free Archetype Feat (Skipped)' : 'Free Archetype Feat',
         icon: 'fa-book',
         complete: complete,
         required: true
@@ -302,12 +341,26 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Mythic feat (only if variant enabled AND slot exists)
     if (context.featSlots.mythic && context.featSlots.mythic > 0) {
       totalRequirements++;
-      const complete = !!choices.mythicFeats;
+      const complete = hasSelection(choices.mythicFeats);
       if (complete) completedRequirements++;
       context.requirements.push({
         name: 'Mythic Feat',
         icon: 'fa-crown',
         complete: complete,
+        required: true
+      });
+    }
+
+    // Runesmith rune selections
+    if (context.runeSelection) {
+      totalRequirements++;
+      const runeCount = choices.runes?.length || 0;
+      const complete = runeCount >= context.runeSelection.maxRunes;
+      if (complete) completedRequirements++;
+      context.requirements.push({
+        name: `Runes (${runeCount}/${context.runeSelection.maxRunes})`,
+        icon: 'fa-gem',
+        complete,
         required: true
       });
     }
@@ -417,6 +470,20 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     // Activate listeners for enriched HTML content (for @UUID links to work)
     const element = this.element;
     if (element) {
+      const progressFill = element.querySelector('.wizard-progress-compact .progress-bar-fill');
+      const progressText = element.querySelector('.wizard-progress-compact .progress-bar-text');
+      const progressCounter = element.querySelector('.wizard-progress-compact .progress-counter');
+      const progressPercent = Math.max(0, Math.min(100, Number(context.progressPercent ?? 0)));
+      if (progressFill) {
+        progressFill.style.width = `${progressPercent}%`;
+      }
+      if (progressText) {
+        progressText.textContent = `${progressPercent}%`;
+      }
+      if (progressCounter) {
+        progressCounter.textContent = `${context.completedRequirements ?? 0}/${context.totalRequirements ?? 0} Requirements Met`;
+      }
+
       element.querySelectorAll('.class-feature-description').forEach(desc => {
         TextEditor.activateListeners(desc);
       });
@@ -453,6 +520,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     if (planChoices.mythicFeats) summary.push('Mythic Feat');
     if (planChoices.abilityBoosts?.length) summary.push(`${planChoices.abilityBoosts.length} Ability Boosts`);
     if (planChoices.skillIncreases?.length) summary.push(`${planChoices.skillIncreases.length} Skill Increases`);
+    if (planChoices.runes?.length) summary.push(`${planChoices.runes.length} Runes`);
 
     const summaryText = summary.length > 0
       ? `<ul><li>${summary.join('</li><li>')}</li></ul>`
@@ -488,6 +556,7 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
 
     // Create feat selector
     const selector = new FeatSelectorApp(this.actor, featType, this.targetLevel, currentSelection, {
+      prerequisiteContext: this._getFeatPrerequisiteContext(),
       onSelect: async (featUuid) => {
         // Update state manager with selection
         this.stateManager.setChoice(featType, featUuid);
@@ -530,6 +599,27 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
     });
 
     // Render the selector
+    selector.render(true);
+  }
+
+  async _onSelectRune(event, target) {
+    const maxRunes = parseInt(target.dataset.maxRunes);
+    const currentSelections = this.stateManager.choices.runes || [];
+    const knownRunes = this.actor.items.filter(item =>
+      item.flags?.core?.sourceId?.startsWith('Compendium.pf2e-playtest-data.impossible-playtest-runes.Item.') ||
+      item.sourceId?.startsWith?.('Compendium.pf2e-playtest-data.impossible-playtest-runes.Item.')
+    );
+
+    const selector = new RuneSelectorApp(this.actor, maxRunes, currentSelections, {
+      levelCap: this.targetLevel,
+      onConfirm: async (runeUuids) => {
+        this.stateManager.setChoice('runes', runeUuids);
+        this._saveScrollPosition();
+        this.render();
+      },
+      knownRunes
+    });
+
     selector.render(true);
   }
 
@@ -581,12 +671,51 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
       // Add increase (if not at max)
       const skillIncreaseCount = ClassFeaturesHelpers.getSkillIncreasesForLevel(this.actor, this.targetLevel);
       const hasRoom = this.stateManager.choices.skillIncreases.length < skillIncreaseCount;
+      const availability = SkillsHelpers.getSkillIncreaseEligibility(
+        this.actor,
+        skill,
+        this.targetLevel,
+        this._getSelectedSkillIncreaseCounts()
+      );
+
+      if (!availability.canIncrease) {
+        ui.notifications.warn(availability.unavailableReason || 'That skill cannot be increased right now.');
+        return;
+      }
+
       if (hasRoom) {
         this.stateManager.choices.skillIncreases.push(skill);
         target.classList.add('selected');
       } else {
         ui.notifications.warn(`You can only select ${skillIncreaseCount} skill increases at this level.`);
       }
+    }
+
+    this._saveScrollPosition();
+    this.render();
+  }
+
+  _getSelectedSkillIncreaseCounts() {
+    return countSelections(this.stateManager.choices.skillIncreases || []);
+  }
+
+  _getFeatPrerequisiteContext() {
+    return {
+      effectiveLevel: this.targetLevel,
+      skillRanks: SkillsHelpers.getProjectedSkillRanks(this.actor, this._getSelectedSkillIncreaseCounts())
+    };
+  }
+
+  /**
+   * Toggle skip archetype feat
+   */
+  async _onToggleSkipArchetypeFeat(event, target) {
+    const currentSkip = this.stateManager.choices.skipArchetypeFeat;
+    this.stateManager.setChoice('skipArchetypeFeat', !currentSkip);
+
+    // If skipping, clear any selected archetype feat
+    if (!currentSkip) {
+      this.stateManager.setChoice('freeArchetypeFeats', null);
     }
 
     this._saveScrollPosition();
@@ -618,229 +747,13 @@ export class LevelUpWizardApp extends foundry.applications.api.HandlebarsApplica
    */
   async _onSubmit(event, target) {
     try {
-      const choices = this.stateManager.choices;
-      const currentLevel = this.actor.system.details.level.value;
+      const { BuildPlanApplicator } = await import('./build-plan-applicator.js');
 
-      // Validate required choices
-      // TODO: Add comprehensive validation
-
-      ui.notifications.info(`Applying level ${this.targetLevel} selections...`);
-
-      // 0. Update actor level if needed (only if actually leveling up, not if already at target level)
-      if (currentLevel < this.targetLevel) {
-        await this.actor.update({ 'system.details.level.value': this.targetLevel });
-        ui.notifications.info(`Level increased to ${this.targetLevel}`);
-      }
-
-      // 1. Add feats
-      const featTypes = {
-        classFeats: 'class',
-        ancestryFeats: 'ancestry',
-        skillFeats: 'skill',
-        generalFeats: 'general',
-        freeArchetypeFeats: 'archetype',
-        ancestryParagonFeats: 'xdy_ancestryparagon',
-        mythicFeats: 'mythic',
-        dualClassFeats: 'xdy_dualclass'
-      };
-
-      const featsToCreate = [];
-      for (const [featType, locationGroup] of Object.entries(featTypes)) {
-        const featUuid = choices[featType];
-        if (featUuid) {
-          try {
-            const feat = await fromUuid(featUuid);
-            if (feat) {
-              // Check if actor already has this feat (check by sourceId, name+location, or UUID)
-              const targetLocation = `${locationGroup}-${this.targetLevel}`;
-              const existingFeat = this.actor.items.find(i =>
-                i.type === 'feat' && (
-                  i.sourceId === featUuid ||
-                  i.uuid === featUuid ||
-                  i.flags?.core?.sourceId === featUuid ||
-                  (i.name === feat.name && i.system.location === targetLocation)
-                )
-              );
-
-              if (existingFeat) {
-                console.log(`${MODULE_NAME} | Feat ${feat.name} already exists at ${targetLocation}, skipping`);
-                continue;
-              }
-
-              const featClone = foundry.utils.duplicate(feat.toObject());
-              featClone.system.location = `${locationGroup}-${this.targetLevel}`;
-              featClone.system.level = {
-                ...featClone.system.level,
-                taken: this.targetLevel
-              };
-              featsToCreate.push(featClone);
-            }
-          } catch (e) {
-            console.warn(`${MODULE_NAME} | Failed to load feat ${featUuid}:`, e);
-          }
-        }
-      }
-
-      if (featsToCreate.length > 0) {
-        await this.actor.createEmbeddedDocuments('Item', featsToCreate);
-        ui.notifications.info(`Added ${featsToCreate.length} feat(s)`);
-      } else if (Object.values(choices).some(v => v)) {
-        ui.notifications.info('All selected feats already exist on character');
-      }
-
-      // 2. Apply skill increases
-      if (choices.skillIncreases && choices.skillIncreases.length > 0) {
-        const updates = {};
-        for (const skillKey of choices.skillIncreases) {
-          const currentRank = this.actor.system.skills[skillKey]?.rank || 0;
-          updates[`system.skills.${skillKey}.rank`] = currentRank + 1;
-        }
-        await this.actor.update(updates);
-        ui.notifications.info(`Increased ${choices.skillIncreases.length} skill(s)`);
-      }
-
-      // 3. Apply ability boosts using PF2e's build system
-      // PF2e stores ability boosts in system.build.attributes.boosts.{boostSet}
-      // The boostSet corresponds to the level milestone (5, 10, 15, 20)
-      if (choices.abilityBoosts && choices.abilityBoosts.length > 0) {
-        // Determine which boost set this level belongs to
-        const boostSetLevels = [5, 10, 15, 20];
-        const currentBoostSet = boostSetLevels.find(level => level >= this.targetLevel);
-        
-        if (currentBoostSet) {
-          const boostPath = `system.build.attributes.boosts.${currentBoostSet}`;
-          await this.actor.update({ [boostPath]: choices.abilityBoosts });
-          ui.notifications.info(`Applied ${choices.abilityBoosts.length} ability boost(s)`);
-        } else {
-          console.warn(`${MODULE_NAME} | Could not determine boost set for level ${this.targetLevel}`);
-        }
-      }
-
-      // 4. Apply spells
-      const spellsToCreate = [];
-      const spellTypes = ['cantrips', 'rank1Spells', 'rank2Spells', 'rank3Spells', 'rank4Spells',
-                          'rank5Spells', 'rank6Spells', 'rank7Spells', 'rank8Spells', 'rank9Spells', 'rank10Spells',
-                          'additionalRank1Spells', 'additionalRank2Spells', 'additionalRank3Spells', 'additionalRank4Spells',
-                          'additionalRank5Spells', 'additionalRank6Spells', 'additionalRank7Spells', 'additionalRank8Spells',
-                          'additionalRank9Spells', 'additionalRank10Spells'];
-
-      // Find the spellcasting entry for the actor using the shared helper
-      // Debug: Log all spellcasting entries on the actor
-      const allSpellcastingEntries = this.actor.items.filter(i => i.type === 'spellcastingEntry');
-      console.log(`${MODULE_NAME} | Found ${allSpellcastingEntries.length} spellcasting entries on actor:`);
-      allSpellcastingEntries.forEach((entry, idx) => {
-        console.log(`${MODULE_NAME} |   [${idx}] "${entry.name}" - id: ${entry.id}, category: ${entry.system?.category}, tradition: ${entry.system?.tradition?.value}`);
+      await BuildPlanApplicator.applyLevel(this.actor, this.stateManager.choices, this.targetLevel, {
+        notify: true,
+        createChatMessage: true,
+        updatePlan: false
       });
-      
-      const spellcastingEntry = SpellHelpers.getClassSpellcastingEntry(this.actor);
-      console.log(`${MODULE_NAME} | FINAL spellcasting entry selected: "${spellcastingEntry?.name}" (id: ${spellcastingEntry?.id})`);
-
-      for (const spellType of spellTypes) {
-        const spellUuids = choices[spellType];
-        if (spellUuids && Array.isArray(spellUuids) && spellUuids.length > 0) {
-          for (const spellUuid of spellUuids) {
-            try {
-              const spell = await fromUuid(spellUuid);
-              if (spell) {
-                // Check if actor already has this spell
-                const existingSpell = this.actor.items.find(i =>
-                  i.type === 'spell' && (
-                    i.sourceId === spellUuid ||
-                    i.uuid === spellUuid ||
-                    i.flags?.core?.sourceId === spellUuid ||
-                    i.name === spell.name
-                  )
-                );
-
-                if (existingSpell) {
-                  console.log(`${MODULE_NAME} | Spell ${spell.name} already exists, skipping`);
-                  continue;
-                }
-
-                const spellClone = foundry.utils.duplicate(spell.toObject());
-
-                // Set sourceId for tracking
-                if (!spellClone.flags) spellClone.flags = {};
-                if (!spellClone.flags.core) spellClone.flags.core = {};
-                spellClone.flags.core.sourceId = spellUuid;
-
-                // Set location to spellcasting entry so spell appears in the correct list
-                if (spellcastingEntry) {
-                  if (!spellClone.system.location) spellClone.system.location = {};
-                  spellClone.system.location.value = spellcastingEntry.id;
-                  debugLog('LevelUpWizard._onSubmit', `Set spell location to: ${spellcastingEntry.id}`);
-                }
-
-                debugLog('LevelUpWizard._onSubmit', `Adding spell: ${spell.name} (${spellUuid})`);
-                spellsToCreate.push(spellClone);
-              }
-            } catch (e) {
-              console.warn(`${MODULE_NAME} | Failed to load spell ${spellUuid}:`, e);
-            }
-          }
-        }
-      }
-
-      if (spellsToCreate.length > 0) {
-        debugLog('LevelUpWizard._onSubmit', `Creating ${spellsToCreate.length} spell(s)`);
-        const createdSpells = await this.actor.createEmbeddedDocuments('Item', spellsToCreate);
-        debugLog('LevelUpWizard._onSubmit', `Successfully created ${createdSpells.length} spell(s)`);
-        ui.notifications.info(`Added ${createdSpells.length} spell(s) to your character`);
-      }
-
-      // Update spell slots in spellcasting entry based on target level
-      // This runs for ALL spellcasters, including auto-learn classes like Cleric/Druid
-      console.log(`${MODULE_NAME} | Checking spell slot update - spellcastingEntry: ${spellcastingEntry ? spellcastingEntry.name : 'NONE'}`);
-      if (spellcastingEntry) {
-        const classItem = this.actor.items.find(i => i.type === 'class');
-        console.log(`${MODULE_NAME} | Class item: ${classItem ? classItem.name : 'NONE'}`);
-        if (classItem) {
-          const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
-          console.log(`${MODULE_NAME} | Class slug: ${classSlug}`);
-          const targetSlots = SpellSlotProgression.getSpellSlotsAtLevel(classSlug, this.targetLevel);
-          console.log(`${MODULE_NAME} | Target slots for ${classSlug} at level ${this.targetLevel}:`, targetSlots);
-
-          // Always update slots - for wave casters we need to set slots to 0 for lost ranks
-          if (targetSlots || SpellSlotProgression.isWaveCaster(classSlug)) {
-            console.log(`${MODULE_NAME} | Updating spell slots for ${classSlug} at level ${this.targetLevel}:`, targetSlots);
-
-            // Build the slots update object
-            // For wave casters (Magus, Summoner), we need to explicitly set slots to 0 for ranks that are lost
-            const slotsUpdate = {};
-            for (let rank = 1; rank <= 10; rank++) {
-              const slotCount = (targetSlots && targetSlots[rank]) || 0;
-              // Always set the slot value - this handles both gaining and losing slots
-              // PF2e uses slot1, slot2, etc. for each rank (skip slot0 for cantrips)
-              slotsUpdate[`system.slots.slot${rank}`] = {
-                max: slotCount,
-                value: slotCount // Set current slots to max on level up
-              };
-            }
-
-            await spellcastingEntry.update(slotsUpdate);
-            console.log(`${MODULE_NAME} | Spell slots updated successfully for ${spellcastingEntry.name}`);
-          } else {
-            console.log(`${MODULE_NAME} | No spell slot data found for class: ${classSlug}`);
-          }
-
-          // For auto-learn classes (Cleric, Druid, Animist), add all common spells they can now cast
-          if (SpellHelpers.autoLearnsCommonSpells(this.actor)) {
-            await this._addAutoLearnSpells(spellcastingEntry, classSlug, targetSlots);
-          }
-        }
-      } else {
-        console.log(`${MODULE_NAME} | No spellcasting entry found - skipping spell slot update`);
-      }
-
-      // 5. Create chat message
-      const chatData = {
-        user: game.user.id,
-        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-        content: `<h3>Level Up Complete!</h3><p><strong>${this.actor.name}</strong> has reached <strong>Level ${this.targetLevel}</strong>!</p>`
-      };
-      await ChatMessage.create(chatData);
-
-      ui.notifications.success(`Successfully leveled up to ${this.targetLevel}!`);
 
       // Close wizard
       this.close();

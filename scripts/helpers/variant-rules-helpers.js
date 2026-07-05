@@ -1,5 +1,6 @@
-// Variant Rules Helpers - Detection and management of PF2e variant rules
+// Variant Rules Helpers - Detection and management of PF2e/SF2e variant rules
 import { MODULE_NAME, debugLog } from '../module.js';
+import { getSystemId } from '../system-config.js';
 
 /**
  * Detect all active variant rules
@@ -22,9 +23,10 @@ export function detectVariantRules() {
  */
 export function isFreeArchetypeEnabled() {
   try {
+    const systemId = getSystemId();
     const settings = game.settings.settings;
-    if (settings.has('pf2e.freeArchetypeVariant')) {
-      return game.settings.get('pf2e', 'freeArchetypeVariant') === true;
+    if (settings.has(`${systemId}.freeArchetypeVariant`)) {
+      return game.settings.get(systemId, 'freeArchetypeVariant') === true;
     }
     return false;
   } catch (error) {
@@ -39,9 +41,10 @@ export function isFreeArchetypeEnabled() {
  */
 export function isGradualBoostsEnabled() {
   try {
+    const systemId = getSystemId();
     const settings = game.settings.settings;
-    if (settings.has('pf2e.gradualBoostsVariant')) {
-      return game.settings.get('pf2e', 'gradualBoostsVariant') === true;
+    if (settings.has(`${systemId}.gradualBoostsVariant`)) {
+      return game.settings.get(systemId, 'gradualBoostsVariant') === true;
     }
     return false;
   } catch (error) {
@@ -77,9 +80,10 @@ export function isDualClassEnabled() {
   try {
     // Dual class might be from workbench or a future PF2e variant
     // Check if the setting exists first
+    const systemId = getSystemId();
     const settings = game.settings.settings;
-    if (settings.has('pf2e.dualClass')) {
-      return game.settings.get('pf2e', 'dualClass') === true;
+    if (settings.has(`${systemId}.dualClass`)) {
+      return game.settings.get(systemId, 'dualClass') === true;
     }
     return false;
   } catch (error) {
@@ -94,9 +98,10 @@ export function isDualClassEnabled() {
  */
 export function getMythicSetting() {
   try {
+    const systemId = getSystemId();
     const settings = game.settings.settings;
-    if (settings.has('pf2e.mythic')) {
-      return game.settings.get('pf2e', 'mythic');
+    if (settings.has(`${systemId}.mythic`)) {
+      return game.settings.get(systemId, 'mythic');
     }
     return 'disabled';
   } catch (error) {
@@ -119,9 +124,10 @@ export function isMythicEnabled() {
  */
 export function getABPSetting() {
   try {
+    const systemId = getSystemId();
     const settings = game.settings.settings;
-    if (settings.has('pf2e.automaticBonusVariant')) {
-      return game.settings.get('pf2e', 'automaticBonusVariant');
+    if (settings.has(`${systemId}.automaticBonusVariant`)) {
+      return game.settings.get(systemId, 'automaticBonusVariant');
     }
     return 'noABP';
   } catch (error) {

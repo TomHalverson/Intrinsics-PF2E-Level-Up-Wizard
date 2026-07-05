@@ -23,11 +23,13 @@ export class LevelUpStateManager {
       skillFeats: null,
       generalFeats: null,
       freeArchetypeFeats: null,
+      skipArchetypeFeat: false,
       ancestryParagonFeats: null,
       mythicFeats: null,
       dualClassFeats: null,
       skillIncreases: [],
       abilityBoosts: [],
+      runes: [],
       // Spell selections
       cantrips: [],
       rank1Spells: [],
@@ -189,7 +191,9 @@ export class LevelUpStateManager {
     const spellcasterClasses = [
       'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'oracle',
       'witch', 'magus', 'summoner', 'psychic', 'animist', 'necromancer',
-      'kineticist' // Has kinetic elements but still has spell-like features
+      'kineticist', // Has kinetic elements but still has spell-like features
+      // SF2E classes
+      'mystic', 'precog', 'technomancer', 'witchwarper'
     ];
 
     const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
@@ -216,7 +220,12 @@ export class LevelUpStateManager {
       'summoner': 'arcane',
       'psychic': 'occult',
       'animist': 'divine',
-      'necromancer': 'occult'
+      'necromancer': 'occult',
+      // SF2E classes
+      'mystic': 'divine',
+      'precog': 'occult',
+      'technomancer': 'arcane',
+      'witchwarper': 'occult'
     };
 
     const classSlug = classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');

@@ -2,7 +2,16 @@
 import { MODULE_NAME, debugLog } from './module.js';
 import * as FeatHelpers from './helpers/feat-helpers.js';
 import * as ClassFeaturesHelpers from './helpers/class-features-helpers.js';
+import * as SkillsHelpers from './helpers/skills-helpers.js';
 import * as VariantRulesHelpers from './helpers/variant-rules-helpers.js';
+
+/**
+ * Get normalized class slug from class item (handles playtest null slugs)
+ */
+function getClassSlug(classItem) {
+  if (!classItem) return null;
+  return classItem.slug || classItem.name?.toLowerCase().replace(/\s+/g, '-');
+}
 
 /**
  * Validate choices for a specific level
@@ -44,7 +53,7 @@ export function validateLevelChoices(actor, level, choices) {
   }
 
   // Validate free archetype feats
-  if (featSlots.archetype > 0 && !choices.freeArchetypeFeats) {
+  if (featSlots.archetype > 0 && !choices.freeArchetypeFeats && !choices.skipArchetypeFeat) {
     warnings.push('Free archetype feat not selected');
   }
 
@@ -75,13 +84,38 @@ export function validateLevelChoices(actor, level, choices) {
     }
   }
 
+  // Validate Runesmith runes
+  const expectedRunes = ClassFeaturesHelpers.getRunesToLearnAtLevel(actor, level);
+  if (expectedRunes > 0) {
+    const runeCount = choices.runes?.length || 0;
+
+    if (runeCount < expectedRunes) {
+      errors.push(`Expected ${expectedRunes} rune selections, got ${runeCount}`);
+    } else if (runeCount > expectedRunes) {
+      errors.push(`Too many runes selected: expected ${expectedRunes}, got ${runeCount}`);
+    }
+  }
+
   // Validate skill increases
   const expectedSkillIncreases = ClassFeaturesHelpers.getSkillIncreasesForLevel(actor, level);
   if (expectedSkillIncreases > 0) {
     const skillIncreaseCount = choices.skillIncreases?.length || 0;
+    const projectedSkillIncreases = {};
 
     if (skillIncreaseCount < expectedSkillIncreases) {
       errors.push(`Expected ${expectedSkillIncreases} skill increases, got ${skillIncreaseCount}`);
+    } else if (skillIncreaseCount > expectedSkillIncreases) {
+      errors.push(`Too many skill increases: expected ${expectedSkillIncreases}, got ${skillIncreaseCount}`);
+    }
+
+    for (const skillKey of choices.skillIncreases || []) {
+      const eligibility = SkillsHelpers.getSkillIncreaseEligibility(actor, skillKey, level, projectedSkillIncreases);
+      if (!eligibility.canIncrease) {
+        errors.push(`${SkillsHelpers.getSkillTranslation(skillKey)} cannot be increased: ${eligibility.unavailableReason}`);
+        continue;
+      }
+
+      projectedSkillIncreases[skillKey] = (projectedSkillIncreases[skillKey] || 0) + 1;
     }
   }
 
@@ -96,7 +130,7 @@ export function validateLevelChoices(actor, level, choices) {
 
       // Auto-learning classes don't need to select spells
       const autoLearns = ['cleric', 'druid', 'animist'].includes(
-        actor.items.find(i => i.type === 'class')?.slug
+        getClassSlug(actor.items.find(i => i.type === 'class'))
       );
 
       if (!autoLearns && spellsForRank.length === 0) {
@@ -148,8 +182,8 @@ export async function validateFeatChoice(actor, featUUID, featType, level) {
   }
 
   // Check prerequisites
-  const prereqCheck = FeatHelpers.checkPrerequisites(actor, feat);
-  if (!prereqCheck.meets) {
+  const prereqCheck = FeatHelpers.checkPrerequisites(actor, feat, { effectiveLevel: level });
+  if (prereqCheck.meets === false) {
     errors.push(`Missing prerequisites: ${prereqCheck.missing.join(', ')}`);
   }
 
@@ -255,17 +289,10 @@ export function validateSkillIncrease(actor, skillKey) {
     return { valid: false, errors };
   }
 
-  const skill = actor.system.skills[skillKey];
-
-  if (!skill) {
-    errors.push('Invalid skill');
-    return { valid: false, errors };
-  }
-
-  const currentRank = skill.rank || 0;
-
-  if (currentRank >= 4) { // Legendary
-    errors.push('Skill is already legendary');
+  const targetLevel = actor.system?.details?.level?.value ?? 1;
+  const eligibility = SkillsHelpers.getSkillIncreaseEligibility(actor, skillKey, targetLevel);
+  if (!eligibility.canIncrease) {
+    errors.push(eligibility.unavailableReason || 'Skill cannot be increased');
   }
 
   return {

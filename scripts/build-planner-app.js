@@ -8,6 +8,14 @@ import * as SpellHelpers from './helpers/spell-helpers.js';
 import * as SpellSlotProgression from './helpers/spell-slot-progression.js';
 import { FeatSelectorApp } from './feat-selector.js';
 import { SpellSelectorApp } from './spell-selector.js';
+import { RuneSelectorApp } from './rune-selector.js';
+
+function countSelections(values = []) {
+  return values.reduce((counts, value) => {
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
 
 /**
  * Build Planner - Plan character progression from levels 1-20
@@ -39,8 +47,8 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
     id: 'build-planner-{id}',
     classes: ['intrinsics-level-up-wizard', 'build-planner-app'],
     position: {
-      width: 1000,
-      height: 800
+      width: 1080,
+      height: 860
     },
     window: {
       resizable: true,
@@ -50,6 +58,7 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
       selectLevel: this._onSelectLevel,
       selectFeat: this._onSelectFeat,
       selectSpell: this._onSelectSpell,
+      selectRune: this._onSelectRune,
       toggleAbilityBoost: this._onToggleAbilityBoost,
       toggleSkillIncrease: this._onToggleSkillIncrease,
       savePlan: this._onSavePlan,
@@ -110,6 +119,9 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
       if (!context.choices.abilityBoosts) {
         context.choices.abilityBoosts = [];
       }
+      if (!context.choices.runes) {
+        context.choices.runes = [];
+      }
 
       // Get feat slots
       context.featSlots = ClassFeaturesHelpers.getFeatSlotsForLevel(this.actor, this.selectedLevel);
@@ -121,7 +133,21 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
       // Calculate planned skill increases from earlier levels in the build plan
       const plannedSkillIncreases = this._getPlannedSkillIncreases(this.selectedLevel);
       context.skillIncreaseCount = ClassFeaturesHelpers.getSkillIncreasesForLevel(this.actor, this.selectedLevel);
-      context.availableSkills = context.skillIncreaseCount > 0 ? SkillsHelpers.getSkillsForLevel(this.actor, this.selectedLevel, plannedSkillIncreases) : [];
+      context.availableSkills = context.skillIncreaseCount > 0
+        ? SkillsHelpers.getSkillsForLevel(this.actor, this.selectedLevel, this._getProjectedSkillIncreaseCounts(this.selectedLevel))
+        : [];
+
+      context.isRunesmith = ClassFeaturesHelpers.isRunesmith(this.actor);
+      context.runesmithChanges = context.isRunesmith
+        ? ClassFeaturesHelpers.getRunesmithChangesAtLevel(this.selectedLevel)
+        : null;
+      const runesToLearn = ClassFeaturesHelpers.getRunesToLearnAtLevel(this.actor, this.selectedLevel);
+      if (runesToLearn > 0) {
+        context.runeSelection = {
+          maxRunes: runesToLearn,
+          current: levelData.choices.runes || []
+        };
+      }
 
       // Check if spellcaster
       context.isSpellcaster = ClassFeaturesHelpers.isSpellcaster(this.actor);
@@ -195,7 +221,8 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
         if (description) {
           description = await TextEditor.enrichHTML(description, {
             async: true,
-            relativeTo: this.actor
+            relativeTo: this.actor,
+            rollData: this.actor.getRollData()
           });
         }
 
@@ -344,6 +371,7 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
 
     // Create feat selector
     const selector = new FeatSelectorApp(this.actor, featType, this.selectedLevel, currentSelection, {
+      prerequisiteContext: this._getFeatPrerequisiteContext(),
       onSelect: async (featUuid) => {
         // Update build plan with selection
         this.buildPlan.levels[this.selectedLevel].choices[featType] = featUuid;
@@ -387,6 +415,29 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
     });
 
     // Render the selector
+    selector.render(true);
+  }
+
+  static async _onSelectRune(event, target) {
+    const maxRunes = parseInt(target.dataset.maxRunes);
+    const currentSelections = this.buildPlan.levels[this.selectedLevel].choices.runes || [];
+
+    const knownRunes = this.actor.items.filter(item =>
+      item.flags?.core?.sourceId?.startsWith('Compendium.pf2e-playtest-data.impossible-playtest-runes.Item.') ||
+      item.sourceId?.startsWith?.('Compendium.pf2e-playtest-data.impossible-playtest-runes.Item.')
+    );
+
+    const selector = new RuneSelectorApp(this.actor, maxRunes, currentSelections, {
+      levelCap: this.selectedLevel,
+      onConfirm: async (runeUuids) => {
+        this.buildPlan.levels[this.selectedLevel].choices.runes = runeUuids;
+        this._autoSave();
+        this._saveScrollPosition();
+        this.render();
+      },
+      knownRunes
+    });
+
     selector.render(true);
   }
 
@@ -437,6 +488,18 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
     } else {
       // Check limit
       const skillIncreaseCount = ClassFeaturesHelpers.getSkillIncreasesForLevel(this.actor, this.selectedLevel);
+      const availability = SkillsHelpers.getSkillIncreaseEligibility(
+        this.actor,
+        skill,
+        this.selectedLevel,
+        this._getProjectedSkillIncreaseCounts(this.selectedLevel)
+      );
+
+      if (!availability.canIncrease) {
+        ui.notifications.warn(availability.unavailableReason || 'That skill cannot be increased at this level.');
+        return;
+      }
+
       if (choices.skillIncreases.length < skillIncreaseCount) {
         choices.skillIncreases.push(skill);
       } else {
@@ -448,6 +511,29 @@ export class BuildPlannerApp extends foundry.applications.api.HandlebarsApplicat
     this._autoSave();
     this._saveScrollPosition();
     this.render();
+  }
+
+  _getCurrentLevelSkillIncreaseCounts(level = this.selectedLevel) {
+    const choices = this.buildPlan.levels[level]?.choices;
+    return countSelections(choices?.skillIncreases || []);
+  }
+
+  _getProjectedSkillIncreaseCounts(level = this.selectedLevel) {
+    const projected = this._getPlannedSkillIncreases(level);
+    const currentLevelSelections = this._getCurrentLevelSkillIncreaseCounts(level);
+
+    for (const [skillKey, count] of Object.entries(currentLevelSelections)) {
+      projected[skillKey] = (projected[skillKey] || 0) + count;
+    }
+
+    return projected;
+  }
+
+  _getFeatPrerequisiteContext() {
+    return {
+      effectiveLevel: this.selectedLevel,
+      skillRanks: SkillsHelpers.getProjectedSkillRanks(this.actor, this._getProjectedSkillIncreaseCounts(this.selectedLevel))
+    };
   }
 
   /**

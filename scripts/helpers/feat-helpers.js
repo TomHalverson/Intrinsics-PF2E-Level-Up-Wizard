@@ -1,6 +1,7 @@
 // Feat Helpers - Feat filtering, archetype detection, and feat type logic
 import { MODULE_NAME, debugLog } from '../module.js';
 import dataProvider from '../data-provider.js';
+import { getSystemSkills } from './skills-helpers.js';
 
 // Feat level arrays for different feat types
 const FREE_ARCHETYPE_FEAT_LEVELS = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
@@ -269,14 +270,31 @@ export function getPrerequisitesString(feat) {
   return prereqs.map(p => p.value).join(', ');
 }
 
+function getPrerequisiteValue(prereq) {
+  if (typeof prereq === 'string') return prereq;
+  return prereq?.value || '';
+}
+
+function getEffectiveSkillRank(actor, skillName, skillRanks = null) {
+  const explicitRank = skillRanks?.[skillName];
+  if (typeof explicitRank === 'number') return explicitRank;
+  if (explicitRank && typeof explicitRank.rank === 'number') return explicitRank.rank;
+  return actor.system.skills?.[skillName]?.rank || 0;
+}
+
 /**
  * Check if actor meets feat prerequisites
  * @param {Actor} actor - The actor
  * @param {Item} feat - The feat to check
+ * @param {Object} options - Optional evaluation context
  * @returns {Object} { meets: boolean, missing: Array }
  */
-export function checkPrerequisites(actor, feat) {
+export function checkPrerequisites(actor, feat, options = {}) {
   const prereqs = feat.system.prerequisites?.value || [];
+  const effectiveLevel = Number.isFinite(Number(options.effectiveLevel))
+    ? Number(options.effectiveLevel)
+    : actor.system?.details?.level?.value || 0;
+  const skillRanks = options.skillRanks || null;
 
   if (prereqs.length === 0) {
     return { meets: true, missing: [], unknown: [] };
@@ -284,6 +302,9 @@ export function checkPrerequisites(actor, feat) {
 
   const missing = [];
   const unknown = [];
+  const actorFeatNames = actor.items
+    .filter(i => i.type === 'feat')
+    .map(i => i.name.toLowerCase());
 
   // This is a simplified check - full prerequisite checking would require
   // parsing the prerequisite text and checking against actor's abilities,
@@ -291,11 +312,22 @@ export function checkPrerequisites(actor, feat) {
 
   for (const prereq of prereqs) {
     // Check common prerequisite types
-    const prereqText = prereq.value?.toLowerCase() || '';
+    const prereqTextRaw = getPrerequisiteValue(prereq);
+    const prereqText = prereqTextRaw.toLowerCase();
 
     // If prereq is empty or can't be parsed, mark as unknown
     if (!prereqText) {
-      unknown.push(prereq.value || 'Unknown prerequisite');
+      unknown.push(prereqTextRaw || 'Unknown prerequisite');
+      continue;
+    }
+
+    // Check level requirements (e.g. "7th level", "10th-level")
+    const levelMatch = prereqText.match(/(\d+)(?:st|nd|rd|th)?(?:-level|\s+level)/);
+    if (levelMatch) {
+      const requiredLevel = parseInt(levelMatch[1], 10);
+      if (effectiveLevel < requiredLevel) {
+        missing.push(prereqTextRaw);
+      }
       continue;
     }
 
@@ -307,7 +339,7 @@ export function checkPrerequisites(actor, feat) {
       const actorValue = actor.system.abilities[abilityKey]?.value || 0;
 
       if (actorValue < parseInt(value)) {
-        missing.push(prereq.value);
+        missing.push(prereqTextRaw);
       }
       continue; // Handled this prerequisite
     }
@@ -317,10 +349,6 @@ export function checkPrerequisites(actor, feat) {
     // Examples: "Power Attack", "Cavalier Dedication", "Shield Block feat"
 
     // Get all actor's feat names in lowercase for comparison
-    const actorFeatNames = actor.items
-      .filter(i => i.type === 'feat')
-      .map(i => i.name.toLowerCase());
-
     // Check if any actor feat name appears in the prerequisite text
     // Also handle cases where the prerequisite is just the feat name
     const hasFeat = actorFeatNames.some(featName => {
@@ -332,7 +360,7 @@ export function checkPrerequisites(actor, feat) {
 
     if (!hasFeat && (prereqText.includes('feat') || prereqText.includes('dedication') || prereqText.includes('archetype'))) {
       // Only mark as missing if we're confident this is a feat prerequisite
-      missing.push(prereq.value);
+      missing.push(prereqTextRaw);
       continue; // Handled this prerequisite
     } else if (hasFeat) {
       // Found the feat
@@ -343,21 +371,19 @@ export function checkPrerequisites(actor, feat) {
     // Check for proficiency requirements
     if (prereqText.includes('trained') || prereqText.includes('expert') || prereqText.includes('master') || prereqText.includes('legendary')) {
       // Try to extract skill name and rank requirement
-      const skills = ['acrobatics', 'arcana', 'athletics', 'crafting', 'deception', 'diplomacy',
-                      'intimidation', 'lore', 'medicine', 'nature', 'occultism', 'performance',
-                      'religion', 'society', 'stealth', 'survival', 'thievery'];
+      // Include 'lore' plus the active system's skills (SF2E adds Computers and Piloting)
+      const skills = ['lore', ...getSystemSkills()];
 
       let foundSkill = false;
       for (const skillName of skills) {
         if (prereqText.includes(skillName)) {
-          const skillData = actor.system.skills?.[skillName];
-          if (skillData) {
-            const rank = skillData.rank || 0;
+          const rank = getEffectiveSkillRank(actor, skillName, skillRanks);
+          if (Number.isFinite(rank)) {
             const rankNames = ['untrained', 'trained', 'expert', 'master', 'legendary'];
-            const requiredRank = rankNames.findIndex(r => prereqText.includes(r));
+            const requiredRank = rankNames.findLastIndex(r => prereqText.includes(r));
 
             if (requiredRank !== -1 && rank < requiredRank) {
-              missing.push(prereq.value);
+              missing.push(prereqTextRaw);
             }
             foundSkill = true;
             break;
@@ -374,12 +400,12 @@ export function checkPrerequisites(actor, feat) {
     if (prereqText.includes('class') || prereqText.includes('ancestry') || prereqText.includes('heritage')) {
       // These are usually structural and difficult to validate programmatically
       // Mark as unknown for now
-      unknown.push(prereq.value);
+      unknown.push(prereqTextRaw);
       continue;
     }
 
     // If we couldn't determine how to check this prerequisite, mark as unknown
-    unknown.push(prereq.value);
+    unknown.push(prereqTextRaw);
   }
 
   // Determine final state:

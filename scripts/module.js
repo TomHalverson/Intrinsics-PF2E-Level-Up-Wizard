@@ -38,18 +38,14 @@ Hooks.once('init', async () => {
 Hooks.once('ready', async () => {
   console.log(`${MODULE_TITLE} | Module ready`);
 
-  // Initialize TTS system
-  const { TTSHelper } = await import('./helpers/tts-helper.js');
-  await TTSHelper.initialize();
-  
-  // Apply accessibility settings to document
-  applyAccessibilitySettings();
-
   // Initialize global API
   initializeAPI();
 
   // Register hooks for character sheet buttons
+  // V14: PF2E character sheets are ApplicationV2 → use getHeaderControlsApplicationV2.
+  // Keep the V1 hook registered too as a no-op safety net for any V1 sheets.
   Hooks.on('getActorSheetHeaderButtons', onGetActorSheetHeaderButtons);
+  Hooks.on('getHeaderControlsApplicationV2', onGetHeaderControlsApplicationV2);
 
   // Register hook for level-up detection
   Hooks.on('updateActor', onActorUpdate);
@@ -57,6 +53,27 @@ Hooks.once('ready', async () => {
   // Register hook to apply accessibility settings when any app renders
   Hooks.on('renderApplication', onRenderApplication);
   Hooks.on('renderApplicationV2', onRenderApplicationV2);
+
+  try {
+    // Initialize TTS system
+    const { TTSHelper } = await import('./helpers/tts-helper.js');
+    await TTSHelper.initialize();
+  } catch (error) {
+    console.warn(`${MODULE_TITLE} | TTS initialization failed:`, error);
+  }
+
+  try {
+    // Apply accessibility settings to document
+    applyAccessibilitySettings();
+  } catch (error) {
+    console.warn(`${MODULE_TITLE} | Failed to apply accessibility settings:`, error);
+  }
+
+  try {
+    await game.intrinsicsLevelUpWizard.registerQueryHandlers();
+  } catch (error) {
+    console.warn(`${MODULE_TITLE} | MCP query registration failed:`, error);
+  }
 });
 
 /**
@@ -178,6 +195,38 @@ function registerSettings() {
       'ALPHABETICAL': 'Alphabetical'
     },
     default: 'LEVEL_DESC'
+  });
+
+  game.settings.register(MODULE_NAME, 'spell-selector-group-by', {
+    name: 'Spell Selector Grouping',
+    hint: 'Default grouping mode for spells in the selector',
+    scope: 'client',
+    config: true,
+    type: String,
+    choices: {
+      'rank': 'Group by Rank',
+      'tag': 'Group by Tag',
+      'none': 'No Grouping'
+    },
+    default: 'rank'
+  });
+
+  game.settings.register(MODULE_NAME, 'spell-selector-show-uncommon', {
+    name: 'Spell Selector Shows Uncommon',
+    hint: 'Remember whether uncommon spells are shown in the spell selector',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  game.settings.register(MODULE_NAME, 'spell-selector-show-rare', {
+    name: 'Spell Selector Shows Rare',
+    hint: 'Remember whether rare spells are shown in the spell selector',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false
   });
 
   // Debug mode
@@ -410,13 +459,37 @@ function initializeAPI() {
     LevelUpWizardApp: null,
     FeatSelector: null,
     SpellSelector: null,
+    RetrainingWizardApp: null,
 
     // Managers (will be set when classes are imported)
     BuildPlanManager: null,
     DataProvider: null,
+    Service: null,
 
     // Helpers
     helpers: {},
+
+    // Bridge / query integration
+    queryPrefix: MODULE_NAME,
+
+    getService: async () => {
+      if (!game.intrinsicsLevelUpWizard.Service) {
+        const serviceModule = await import('./mcp-service.js');
+        game.intrinsicsLevelUpWizard.Service = serviceModule.default;
+      }
+
+      return game.intrinsicsLevelUpWizard.Service;
+    },
+
+    registerQueryHandlers: async () => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.registerQueryHandlers();
+    },
+
+    getRegisteredQueryMethods: async () => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.getRegisteredQueryMethods();
+    },
 
     // API methods
     openBuildPlanner: async (actor) => {
@@ -437,6 +510,66 @@ function initializeAPI() {
       const app = new game.intrinsicsLevelUpWizard.LevelUpWizardApp(actor, level);
       app.render(true);
       return app;
+    },
+
+    openRetrainingWizard: async (actor, options = {}) => {
+      if (!game.intrinsicsLevelUpWizard.RetrainingWizardApp) {
+        const { RetrainingWizardApp } = await import('./retraining-wizard-app.js');
+        game.intrinsicsLevelUpWizard.RetrainingWizardApp = RetrainingWizardApp;
+      }
+      const app = new game.intrinsicsLevelUpWizard.RetrainingWizardApp(actor, options);
+      app.render(true);
+      return app;
+    },
+
+    getActorSummary: async (actor) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.getActorSummary(actor);
+    },
+
+    getBuildPlan: async (actor, options = {}) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.getBuildPlan(actor, options);
+    },
+
+    createBuildPlan: async (actor, options = {}) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.createBuildPlan(actor, options);
+    },
+
+    saveBuildPlan: async (actor, plan) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.saveBuildPlan(actor, plan);
+    },
+
+    setLevelChoices: async (actor, level, choices, options = {}) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.setLevelChoices(actor, level, choices, options);
+    },
+
+    validateLevelChoices: async (actor, level, choices) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.validateLevelChoices(actor, level, choices);
+    },
+
+    validateBuildPlan: async (actor, plan = null) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.validateBuildPlan(actor, plan);
+    },
+
+    previewLevelUp: async (actor, level, choices = null) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.previewLevelUp(actor, level, choices);
+    },
+
+    applyLevelUp: async (actor, level, choices = null, options = {}) => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.applyLevelUp(actor, level, choices, options);
+    },
+
+    listRetrainingOptions: async (actor, category = 'all') => {
+      const service = await game.intrinsicsLevelUpWizard.getService();
+      return service.listRetrainingOptions(actor, category);
     }
   };
 
@@ -490,6 +623,67 @@ function onGetActorSheetHeaderButtons(sheet, buttons) {
       }
     });
   }
+
+  // Add Retraining button
+  buttons.unshift({
+    label: 'Retrain',
+    class: 'intrinsics-retraining-wizard',
+    icon: 'fas fa-rotate',
+    onclick: async () => {
+      await game.intrinsicsLevelUpWizard.openRetrainingWizard(actor);
+    }
+  });
+}
+
+/**
+ * V14: ApplicationV2 header controls hook. PF2E character sheets use V2 in
+ * V14, so getActorSheetHeaderButtons no longer fires for them. Same buttons
+ * as the V1 hook above, V2-shaped.
+ */
+function onGetHeaderControlsApplicationV2(app, controls) {
+  // Identify a character actor sheet — V2 sheets expose `actor` via the
+  // ActorSheetV2 mixin, or fall back to app.document for raw DocumentSheetV2.
+  const actor = app?.actor ?? app?.document;
+  if (!actor || actor.documentName !== 'Actor') return;
+  if (actor.type !== 'character') return;
+  if (!actor.isOwner) return;
+
+  if (game.settings.get(MODULE_NAME, 'show-build-planner-button')) {
+    controls.unshift({
+      action: 'intrinsics-build-planner',
+      icon: 'fas fa-list-ol',
+      label: 'Build Planner',
+      onClick: async () => {
+        await game.intrinsicsLevelUpWizard.openBuildPlanner(actor);
+      }
+    });
+  }
+
+  if (game.settings.get(MODULE_NAME, 'show-level-up-button')) {
+    controls.unshift({
+      action: 'intrinsics-level-up-wizard',
+      icon: 'fas fa-arrow-up',
+      label: 'Level Up',
+      onClick: async () => {
+        const currentLevel = actor.system.details.level.value;
+        const targetLevel = currentLevel + 1;
+        if (targetLevel > 20) {
+          ui.notifications.warn('Character is already at maximum level (20)');
+          return;
+        }
+        await game.intrinsicsLevelUpWizard.openLevelUpWizard(actor, targetLevel);
+      }
+    });
+  }
+
+  controls.unshift({
+    action: 'intrinsics-retraining-wizard',
+    icon: 'fas fa-rotate',
+    label: 'Retrain',
+    onClick: async () => {
+      await game.intrinsicsLevelUpWizard.openRetrainingWizard(actor);
+    }
+  });
 }
 
 // ============================================================================
@@ -550,6 +744,7 @@ function showLevelUpPrompt(actor, level, plan) {
   if (levelChoices.mythicFeats) planSummary.push('Mythic Feat');
   if (levelChoices.skillIncreases?.length) planSummary.push(`Skill Increase (${levelChoices.skillIncreases.length})`);
   if (levelChoices.abilityBoosts?.length) planSummary.push(`Ability Boosts (${levelChoices.abilityBoosts.length})`);
+  if (levelChoices.runes?.length) planSummary.push(`Runes (${levelChoices.runes.length})`);
   if (levelChoices.spells?.cantrips?.length) planSummary.push(`Cantrips (${levelChoices.spells.cantrips.length})`);
   if (levelChoices.spells?.rank1?.length) planSummary.push(`Spells (${levelChoices.spells.rank1.length})`);
 

@@ -52,6 +52,20 @@
       </div>
     </div>
 
+    {{! Prerequisite Filter }}
+    {{#if supportsPrerequisiteFilter}}
+    <div class="filter-group prereq-filter-group">
+      <div class="filter-checkbox">
+        <input type="checkbox"
+               id="filter-unmet-prerequisites"
+               {{#if filterUnmetPrerequisites}}checked{{/if}}
+               data-action="updateFilters"
+               data-filter="filterUnmetPrerequisites">
+        <label for="filter-unmet-prerequisites">Hide Unmet Prerequisites</label>
+      </div>
+    </div>
+    {{/if}}
+
     {{! Level Range Filter }}
     <div class="filter-group">
       <label class="filter-label">Level Range</label>
@@ -200,6 +214,12 @@
         </option>
       </select>
     </div>
+
+    <div class="filter-group filter-actions-group">
+      <button type="button" class="btn btn-secondary btn-small" data-action="resetFilters" {{#unless hasActiveFilters}}disabled{{/unless}}>
+        <i class="fas fa-rotate-left"></i> Reset Filters
+      </button>
+    </div>
   </div>
   </div>
 
@@ -242,7 +262,7 @@
       {{#if feat.prerequisites}}
       <div class="feat-preview-section">
         <h4 class="feat-preview-section-title">{{localize 'intrinsics-pf2e-level-up-wizard.labels.prerequisites'}}</h4>
-        <div class="feat-preview-prerequisites {{#unless feat.prerequisitesMet}}unmet{{/unless}}">
+        <div class="feat-preview-prerequisites {{feat.prerequisitesClass}}">
           {{{feat.prerequisites}}}
         </div>
       </div>
@@ -329,7 +349,7 @@
       {{#if activeFeatDetails.prerequisites}}
       <div class="feat-preview-section">
         <h4 class="feat-preview-section-title">{{localize 'intrinsics-pf2e-level-up-wizard.labels.prerequisites'}}</h4>
-        <div class="feat-preview-prerequisites {{#unless activeFeatDetails.prerequisitesMet}}unmet{{/unless}}">
+        <div class="feat-preview-prerequisites {{activeFeatDetails.prerequisitesClass}}">
           {{{activeFeatDetails.prerequisites}}}
         </div>
       </div>

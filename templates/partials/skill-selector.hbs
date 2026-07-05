@@ -16,7 +16,7 @@
   <div class="skill-selection">
     <div class="skill-list">
       {{#each availableSkills}}
-      <div class="skill-item {{#unless this.canIncrease}}disabled{{/unless}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
+      <div class="skill-item {{#if (and (not this.canIncrease) (not (includes ../choices.skillIncreases this.key)))}}disabled{{/if}} {{#if (includes ../choices.skillIncreases this.key)}}selected{{/if}}"
            data-action="toggleSkillIncrease"
            data-skill="{{this.key}}">
         <div class="skill-name-rank">
